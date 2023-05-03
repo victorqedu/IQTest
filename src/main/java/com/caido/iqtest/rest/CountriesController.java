@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 @RestController
 @RequestMapping("/api")
@@ -35,19 +36,27 @@ public class CountriesController {
     }
 
     @GetMapping("/countries")
+    //@CrossOrigin(origins = "http://caido.ro:3000", allowCredentials = "true")
+    //@CrossOrigin
     CollectionModel<EntityModel<Countries>> getAll() {
         List<EntityModel<Countries>> c = repository.findAll().stream() 
             .map(assembler::toModel) 
             .collect(Collectors.toList());
         return CollectionModel.of(c, linkTo(methodOn(CountriesController.class).getAll()).withSelfRel());
     }
-
+//    List<Countries> getAll() {
+//        return repository.findAll();
+//    }
+    
     @PostMapping("/countries")
+    //@CrossOrigin(origins = "http://caido.ro:3000", allowCredentials = "true")
+    //@CrossOrigin
     EntityModel<Countries> create(@RequestBody Countries o) {
         return assembler.toModel(repository.save(o));
     }
 
     @GetMapping("/countries/{id}")
+    //@CrossOrigin(origins = "http://caido.ro:3000", allowCredentials = "true")
     EntityModel<Countries> getOne(@PathVariable Long id) {
         System.out.println("Start getOne");
         //return repository.findById(id).orElseThrow(() -> new CountryNotFoundException(id));
@@ -59,11 +68,13 @@ public class CountriesController {
     }
 
     @PutMapping("/countries/{id}")
+    //@CrossOrigin(origins = "http://caido.ro:3000", allowCredentials = "true")
     EntityModel<Countries> replace(@RequestBody Countries c, @PathVariable Long id) {
         return assembler.toModel(repository.save(c));
     }
 
     @DeleteMapping("/countries/{id}")
+    //@CrossOrigin(origins = "http://caido.ro:3000", allowCredentials = "true")
     void delete(@PathVariable Long id) {
         repository.deleteById(id);
     }

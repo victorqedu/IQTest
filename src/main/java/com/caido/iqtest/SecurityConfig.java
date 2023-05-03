@@ -24,16 +24,22 @@ public class SecurityConfig {
         // Cross Site Request Forgery disabled when I secure a REST API(these are the recomandations)
         // I found no documentation about how to use the filter chain but this is what I understod:
         //
-        http.csrf().disable()
+        http.csrf().disable().httpBasic().and()
                 .authorizeRequests()
-                .antMatchers(HttpMethod.GET, "/api/countries").hasRole("USER")
-                .antMatchers(HttpMethod.GET, "/api/countries/*").hasRole("USER")
+                .antMatchers(HttpMethod.GET, "/api/countries").hasRole("ADMIN")
+                .antMatchers(HttpMethod.GET, "/api/countries/*").hasRole("ADMIN")
+//                .antMatchers(HttpMethod.GET, "/api/countries").hasRole("ADMIN")
+//                .antMatchers(HttpMethod.GET, "/api/countries/*").hasRole("ADMIN")
                 .antMatchers(HttpMethod.PUT, "/api/countries/*").hasRole("ADMIN")
                 .antMatchers(HttpMethod.POST, "/api/countries").hasRole("ADMIN")
                 .antMatchers(HttpMethod.DELETE, "/api/countries/*").hasRole("ADMIN")
-                .anyRequest().denyAll()
+                .anyRequest().permitAll()
                 ;
-        http.httpBasic();
+//        http.csrf().disable()
+//                .authorizeRequests()
+//                .anyRequest().permitAll()
+//                ;
+        //http.httpBasic();
         
         return http.build();    
     }
