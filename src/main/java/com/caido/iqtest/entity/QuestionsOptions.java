@@ -20,7 +20,7 @@ public class QuestionsOptions implements Serializable {
     public QuestionsOptions() {
     }
 
-    public QuestionsOptions(Long id, Questions idQuestions, byte[] image) {
+    public QuestionsOptions(Long id, Questions idQuestions, String image) {
         this.id = id;
         this.idQuestions = idQuestions;
         this.image = image;
@@ -51,13 +51,12 @@ public class QuestionsOptions implements Serializable {
     }
     
     @Lob
-    @Type(type = "org.hibernate.type.BinaryType")
-    @Column(name = "picture")
-    private byte[] image;
-    public byte[] getImage() {
+    @Column(name = "image")
+    private String image;
+    public String getImage() {
             return image;
     }
-    public void setImage(byte[] image) {
+    public void setImage(String image) {
             this.image = image;
     }
 }

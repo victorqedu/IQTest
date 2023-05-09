@@ -1,5 +1,5 @@
 import { Component } from 'react';
-class Countries extends Component {
+class QuestionsOptions extends Component {
     static Columns = [
         {
             id: 'id',
@@ -12,30 +12,30 @@ class Countries extends Component {
             editable: false,
         },
         {
-            id: 'code',
-            numeric: false,
+            id: 'id_questions',
+            numeric: true,
             disablePadding: false,
-            label: 'Code',
-            type: 'text',
+            label: 'Question',
+            type: 'select',
             columnVisible: true,
             size: 'small',
-            editable: true,
+            editable: false,
         },
         {
-            id: 'name',
+            id: 'image',
             numeric: false,
             disablePadding: false,
-            label: 'Name',
-            type: 'text',
+            label: 'Image',
+            type: 'file',
             columnVisible: true,
-            size: 'regular',
+            size: 'small',
             editable: true,
         },
     ];
     static DEFAULT_ORDER = 'asc';
     static DEFAULT_ORDER_BY = 'name';
     static DEFAULT_ROWS_PER_PAGE = 5;
-    static apiName = "countries";
-    static apiPath = "countriesList";
+    static apiName = "questionsoptions";
+    static apiPath = "questionsoptionsList";
 }
-export default Countries;
+export default QuestionsOptions;

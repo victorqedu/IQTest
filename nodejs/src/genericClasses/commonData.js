@@ -1,5 +1,6 @@
 import { Component } from 'react';
-import {styled, Table, TableCell, tableCellClasses, TableRow} from "@mui/material";
+import {createTheme, styled, TableCell, tableCellClasses} from "@mui/material";
+/*import { ThemeProvider, createMuiTheme, makeStyles } from '@material-ui/core/styles';*/
 
 class commonData extends Component {
     static username = 'victor';
@@ -52,13 +53,41 @@ class commonData extends Component {
         return stabilizedThis.map((el) => el[0]);
     }
 
-    static StyledTableRow = styled(TableRow)(({ theme }) => ({
-        '&:nth-of-type(odd)': {
-            /*backgroundColor: theme.palette.action.hover,*/
+  /*  static StyledTable = styled(Table)(({ theme }) => ({
+        "& .MuiTableCell-root": {
+            border: '0px solid black',
+            "borderBottom": '1px solid #aaaaaa',
+            "tableLayout": 'fixed',
         },
+        "& .Mui-selected": {
+            backgroundColor: "#FF0000",
+        },
+        "& .MuiTableRow-hover": {
+            backgroundColor: "#FF0000",
+        },
+        /!*"&$tableRowSelected, &$tableRowSelected:hover": {
+            backgroundColor: "#FF0000"
+        },*!/
+    }));*/
 
+    /*static StyledTableRow = styled(TableRow)(({ theme }) => ({
+/!*
+        '&:nth-of-type(odd)': {
+            /!*backgroundColor: theme.palette.action.hover,*!/
+            /!*backgroundColor: "#FF0000",*!/
+        },
+*!/
+        "& .MuiTableRow-root": {
+            backgroundColor: "#FF0000",
+        },
+        "& .Mui-selected": {
+            backgroundColor: "#FF0000",
+        },
+        "& .MuiTableRow-hover": {
+            backgroundColor: "#FF0000",
+        },
     }));
-
+*/
     static StyledTableCell = styled(TableCell)(({ theme }) => ({
         [`&.${tableCellClasses.head}`]: {
             //backgroundColor: theme.palette.common.black,
@@ -98,44 +127,29 @@ class commonData extends Component {
         },
     }));
 
-    static StyledTable = styled(Table)(({ theme }) => ({
-        "& .MuiTableCell-root": {
-            border: '0px solid black',
-            "borderBottom": '1px solid #aaaaaa',
-            "tableLayout": 'fixed',
-        }
-    }));
-
-/*    static StyledTableSortLabel = styled(TableSortLabel)(({ theme }) => ({
-        "& .MuiTableSortLabel-root": {"color": "white","&:hover":{color: "white"},"&:active":{color: "white"},"hover":{color: "white"},"active":{color: "white"},":hover":{color: "white"},":active":{color: "white"},},
-        "& .Mui-active": {"color": "white","&:hover":{color: "white"},"&:active":{color: "white"},"hover":{color: "white"},"active":{color: "white"},":hover":{color: "white"},":active":{color: "white"},},
-        "& .MuiTableSortLabel-icon": {"color": "white","&:hover":{color: "white"},"&:active":{color: "white"},"hover":{color: "white"},"active":{color: "white"},":hover":{color: "white"},":active":{color: "white"},},
-        "& 	.MuiTableSortLabel-iconDirectionDesc": {"color": "white","&:hover":{color: "white"},"&:active":{color: "white"},"hover":{color: "white"},"active":{color: "white"},":hover":{color: "white"},":active":{color: "white"},},
-        "& .MuiTableSortLabel-iconDirectionAsc": {"color": "white","&:hover":{color: "white"},"&:active":{color: "white"},"hover":{color: "white"},"active":{color: "white"},":hover":{color: "white"},":active":{color: "white"},},
-        "& root": {"color": "white","&:hover":{color: "white"},"&:active":{color: "white"},"hover":{color: "white"},"active":{color: "white"},":hover":{color: "white"},":active":{color: "white"},},
-        "& active": {"color": "white","&:hover":{color: "white"},"&:active":{color: "white"},"hover":{color: "white"},"active":{color: "white"},":hover":{color: "white"},":active":{color: "white"},},
-        "& icon": {"color": "white","&:hover":{color: "white"},"&:active":{color: "white"},"hover":{color: "white"},"active":{color: "white"},":hover":{color: "white"},":active":{color: "white"},},
-
-    }));
     static theme = createTheme({
         components: {
             // Name of the component
-            TableSortLabel: {
+            TableRow: {
+                defaultProps: {
+                    backgroundColor: "#FF0000",
+                },
                 styleOverrides: {
                     root: {
-                        "color": "white",
-                        "&:hover":{color: "white"},
-                        "&:active":{color: "white"},
-                        "hover":{color: "white"},
-                        "active":{color: "white"},
-                        ":hover":{color: "white"},
-                        ":active":{color: "white"},
+                        fontSize: '1rem',
                     },
                 },
             },
         },
-    });*/
-
+        tableRowRoot: {
+            "&$tableRowSelected, &$tableRowSelected:hover": {
+                backgroundColor: "#FF0000"
+            }
+        },
+        tableRowSelected: {
+            backgroundColor: "#FF0000"
+        },
+    });
     static parseError(error) {
         let message = "";
         if(typeof error.response !== 'undefined') {

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Checkbox, TableHead, TableSortLabel} from "@mui/material";
+import {Checkbox, TableHead, TableRow, TableSortLabel} from "@mui/material";
 import commonData from "../genericClasses/commonData";
 
 class EnhancedTableHead extends Component {
@@ -23,7 +23,7 @@ class EnhancedTableHead extends Component {
         console.log("[ETH]render "+this.props.headCells );
         return (
             <TableHead>
-                <commonData.StyledTableRow>
+                <TableRow>
                     <commonData.StyledSmallTableCell padding="checkbox" sx={{"display":"none"}}>
                         <Checkbox
                             color="primary"
@@ -76,7 +76,7 @@ class EnhancedTableHead extends Component {
                                     </commonData.StyledSmallTableCell>
                             )):null
                     }
-                </commonData.StyledTableRow>
+                </TableRow>
             </TableHead>
         );
     }

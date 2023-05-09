@@ -9,3 +9,4 @@ public class IqtestApplication {
         SpringApplication.run(IqtestApplication.class, args);
     }
 }
+

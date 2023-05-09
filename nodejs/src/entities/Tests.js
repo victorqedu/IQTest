@@ -1,5 +1,5 @@
 import { Component } from 'react';
-class Countries extends Component {
+class Tests extends Component {
     static Columns = [
         {
             id: 'id',
@@ -12,20 +12,10 @@ class Countries extends Component {
             editable: false,
         },
         {
-            id: 'code',
+            id: 'description',
             numeric: false,
             disablePadding: false,
-            label: 'Code',
-            type: 'text',
-            columnVisible: true,
-            size: 'small',
-            editable: true,
-        },
-        {
-            id: 'name',
-            numeric: false,
-            disablePadding: false,
-            label: 'Name',
+            label: 'Description',
             type: 'text',
             columnVisible: true,
             size: 'regular',
@@ -35,7 +25,7 @@ class Countries extends Component {
     static DEFAULT_ORDER = 'asc';
     static DEFAULT_ORDER_BY = 'name';
     static DEFAULT_ROWS_PER_PAGE = 5;
-    static apiName = "countries";
-    static apiPath = "countriesList";
+    static apiName = "tests";
+    static apiPath = "testsList";
 }
-export default Countries;
+export default Tests;
