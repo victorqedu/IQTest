@@ -16,8 +16,8 @@ class QuestionsOptions extends Component {
             numeric: true,
             disablePadding: false,
             label: 'Question',
-            type: 'select',
-            columnVisible: true,
+            type: 'integer',
+            columnVisible: false,
             size: 'small',
             editable: false,
         },
@@ -35,7 +35,8 @@ class QuestionsOptions extends Component {
     static DEFAULT_ORDER = 'asc';
     static DEFAULT_ORDER_BY = 'name';
     static DEFAULT_ROWS_PER_PAGE = 5;
-    static apiName = "questionsoptions";
-    static apiPath = "questionsoptionsList";
+    static apiName = "questionsoptions_findByQuestionId";
+    static apiEditName = "questionsoptions";
+    static apiPath = "questionsOptionsList";
 }
 export default QuestionsOptions;

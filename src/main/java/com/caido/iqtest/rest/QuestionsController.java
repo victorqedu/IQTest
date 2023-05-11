@@ -1,6 +1,8 @@
 package com.caido.iqtest.rest;
 
 import com.caido.iqtest.entity.Questions;
+import com.caido.iqtest.entity.QuestionsOptions;
+import com.caido.iqtest.entity.Tests;
 import com.caido.iqtest.repositories.QuestionsRepository;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -52,6 +54,17 @@ public class QuestionsController {
         System.out.println("Start getOne");
         Questions c = repository.findById(id).orElseThrow(() -> new TestNotFoundException(id));
         return assembler.toModel(c);
+    }
+
+    @GetMapping("/questions_findByTestId/{idTests}")
+    CollectionModel<EntityModel<Questions>>  findByTestId(@PathVariable Long idTests) {
+        System.out.println("Start findByTestId");
+        Tests t = new Tests();
+        t.setId(idTests);
+        List<EntityModel<Questions>> c = repository.findByTestId(t).stream() 
+            .map(assembler::toModel) 
+            .collect(Collectors.toList());
+        return CollectionModel.of(c, linkTo(methodOn(QuestionsController.class).getAll()).withSelfRel());
     }
 
     @PutMapping("/questions/{id}")

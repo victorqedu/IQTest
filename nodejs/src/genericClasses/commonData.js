@@ -106,21 +106,19 @@ class commonData extends Component {
 
     static StyledSmallTableCell = styled(TableCell)(({ theme }) => ({
         [`&.${tableCellClasses.head}`]: {
-            //backgroundColor: "#6d6b6a",
             backgroundColor: "#736FF7",
-            //backgroundColor: "#F76F73",
             color: theme.palette.common.white,
             fontSize: 14,
-            width: '45px',
-            maxWidth: '45px',
+            width: '50px',
+            maxWidth: '50px',
             overflow: "hidden",
             textOverflow: "ellipsis",
             borderStyle: "border-box",
         },
         [`&.${tableCellClasses.body}`]: {
             fontSize: 14,
-            width: '45px',
-            maxWidth: '45px',
+            width: '50px',
+            maxWidth: '50px',
             overflow: "hidden",
             textOverflow: "ellipsis",
             borderStyle: "border-box",

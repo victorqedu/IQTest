@@ -25,9 +25,7 @@ public class QuestionsOptions implements Serializable {
         this.idQuestions = idQuestions;
         this.image = image;
     }
-    
-    
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id", nullable = false)

@@ -32,7 +32,7 @@ class EnhancedTableHead extends Component {
                             }}
                         />
                     </commonData.StyledSmallTableCell>
-                    <commonData.StyledSmallTableCell>
+                    <commonData.StyledSmallTableCell align="right">
                         <b>Nr.crt</b>
                     </commonData.StyledSmallTableCell>
                     {

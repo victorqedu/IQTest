@@ -18,10 +18,10 @@ public class TestsSessionsAnswers implements Serializable {
     public TestsSessionsAnswers() {
     }
 
-    public TestsSessionsAnswers(Long id, TestsSessions idTestsSessions, TestsQuestions idTestsQuestions, QuestionsOptions idQuestionsOptions) {
+    public TestsSessionsAnswers(Long id, TestsSessions idTestsSessions, Questions idQuestions, QuestionsOptions idQuestionsOptions) {
         this.id = id;
         this.idTestsSessions = idTestsSessions;
-        this.idTestsQuestions = idTestsQuestions;
+        this.idQuestions = idQuestions;
         this.idQuestionsOptions = idQuestionsOptions;
     }
     
@@ -52,12 +52,12 @@ public class TestsSessionsAnswers implements Serializable {
     @ManyToOne
     @JoinColumn(name="id_tests_questions")
     @NotNull
-    private TestsQuestions idTestsQuestions;
-    public TestsQuestions getIdTestsQuestions() {
-        return idTestsQuestions;
+    private Questions idQuestions;
+    public Questions getIdTestsQuestions() {
+        return idQuestions;
     }
-    public void setIdTestsQuestions(TestsQuestions idTestsQuestions) {
-        this.idTestsQuestions = idTestsQuestions;
+    public void setQuestions(Questions idQuestions) {
+        this.idQuestions = idQuestions;
     }
     
     @ManyToOne

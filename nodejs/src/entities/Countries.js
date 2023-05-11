@@ -36,6 +36,7 @@ class Countries extends Component {
     static DEFAULT_ORDER_BY = 'name';
     static DEFAULT_ROWS_PER_PAGE = 5;
     static apiName = "countries";
+    static apiEditName = "countries";
     static apiPath = "countriesList";
 }
 export default Countries;

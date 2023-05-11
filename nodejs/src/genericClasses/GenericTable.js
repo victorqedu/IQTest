@@ -15,6 +15,7 @@ import {ReactComponent as DeleteSVG} from '../images/delete.svg';
 import {ReactComponent as EditSVG} from '../images/edit.svg';
 import GenericEdit from "./GenericEdit";
 import QuestionsOptions from "../entities/QuestionsOptions";
+import Questions from "../entities/Questions";
 
 class GenericTable extends Component {
     constructor(props) {
@@ -30,6 +31,7 @@ class GenericTable extends Component {
         this.openAreYouSureDeleteDialog = this.openAreYouSureDeleteDialog.bind(this);
         this.handleTabChange = this.handleTabChange.bind(this);
         this.checkReadyToShowData = this.checkReadyToShowData.bind(this);
+        this.getDataFromApi = this.getDataFromApi.bind(this);
 
         this.state = {
             rows: [],// all the rows available
@@ -44,13 +46,18 @@ class GenericTable extends Component {
             isAreYouSureDeleteOpened: false, // the popup for confirming the deletion of a record
             isInfoDialogOpened: false, // the info dialog
             infoDialogMessage: undefined, // the message displayed in the info dialog
-            apiName: this.props.config.apiName, // the name used to access the api eg: http://caido.ro:8080/api/<apiName>/
+            apiName: this.props.config.apiName, // the name used to access the api eg: http://caido.ro:8080/api/<apiName>/ in order to retrieve the list of rows used to show in the table form
+            apiEditName: this.props.config.apiEditName, // the name used to access the api eg: http://caido.ro:8080/api/<apiName>/ to add/edit a record
             apiPath: this.props.config.apiPath, // how to extract the list of elements from the api JSON: countriesList
             config: this.props.config, // list of columns and their properties as defined in entieies directory
             visibleTabIndex: 0,
         };
     }
 
+    /**
+     * Deletes the record with id  record this.state.selectedRowId
+     * @returns {Promise<void>}
+     */
     async remove() {
         let item = {...this.state};
         item.isAreYouSureDeleteOpened = false;
@@ -87,9 +94,23 @@ class GenericTable extends Component {
     }
 
     componentDidMount() {
-        let item = {...this.state};
+        this.getDataFromApi();
+    }
 
-        axios.get('http://caido.ro:8080/api/'+this.state.apiName, commonData.config)
+    /**
+     * Obtains the data for the table form from the API
+     */
+    getDataFromApi() {
+        if(this.props.isTab && this.props.parentSelectedRowId===undefined) { // nothing to do if this is a tab and no row is selected in the parent
+            return;
+        }
+        let item = {...this.state};
+        let url = 'http://caido.ro:8080/api/'+this.state.apiName;
+        if(this.props.parentSelectedRowId!==undefined) {
+            url+="/"+this.props.parentSelectedRowId;
+        }
+        console.log("getDataFromApi "+url);
+        axios.get(url, commonData.config)
             .then(res => {
                 console.log(res.data);
                 item.rows = res.data["_embedded"][this.state.apiPath];
@@ -110,8 +131,17 @@ class GenericTable extends Component {
     }
 
     componentDidUpdate(prevProps) {
+        console.log("componentDidUpdate apiName "+this.state.apiName);
+        if(this.props.isTab && this.props.parentSelectedRowId!==prevProps.parentSelectedRowId && this.props.parentSelectedRowId!==undefined) {
+            this.getDataFromApi();
+        }
     }
 
+    /**
+     * Orders the rows according to the parameters
+     * @param newOrderBy - the order by
+     * @param newOrder - order type ASC or DESC
+     */
     setOrderData = (newOrderBy, newOrder) => {
         let item = {...this.state};
         item.orderBy = newOrderBy;
@@ -126,12 +156,22 @@ class GenericTable extends Component {
         this.setState(item);
     }
 
+    /**
+     * sets the new visible tab
+     * @param event
+     * @param newTabIndex
+     */
     handleTabChange = (event, newTabIndex) => {
         let item = {...this.state};
         item.visibleTabIndex = newTabIndex;
         this.setState(item);
     }
 
+    /**
+     * Executes on click on every row and sets the property selectedRowId, opens the popup editor
+     * @param event
+     * @param rowId
+     */
     handleRowClick = (event, rowId) => {
         console.log("handleRowClick for rowId "+rowId);
         let item = {...this.state};
@@ -157,6 +197,11 @@ class GenericTable extends Component {
         this.setState(item);
     }
 
+    /**
+     * Changes the page in the table form
+     * @param event
+     * @param newPage
+     */
     handleChangePage = (event, newPage) => {
         let item = {...this.state};
         console.log("handleChangePage for page newPage "+newPage+" old page "+item.page);
@@ -170,6 +215,10 @@ class GenericTable extends Component {
         this.setState(item);
     }
 
+    /**
+     * Changes the number of rows/page
+     * @param event
+     */
     handleChangeRowsPerPage = (event) => {
         let newRowPerPage = event.target.value;
         let item = {...this.state};
@@ -191,6 +240,10 @@ class GenericTable extends Component {
         this.setState(item);
     }
 
+    /**
+     * Opens the popup editor for add/edit
+     * @param event
+     */
     openPopupEditor(event) {
         if(this.checkReadyToShowData()) {
             const target = event.currentTarget;
@@ -217,10 +270,15 @@ class GenericTable extends Component {
         }
     }
 
+    /**
+     * Obtains all the data for the selected row from the id of the selected row(this.state.selectedRowId)
+     * @returns {*}
+     */
     getSelectedRowData() {
         if(this.state.selectedRowId!==undefined) {
             for (let i = 0; i < this.state.rows.length; i++) {
                 if(this.state.rows[i].id===this.state.selectedRowId) {
+                    //let row = JSON.parse(JSON.stringify(this.state.rows[i]));
                     let row = this.state.rows[i];
                     console.log("Table getSelectedRowData returning "+row);
                     return row;
@@ -248,8 +306,13 @@ class GenericTable extends Component {
     render() {
         console.log("render this.selectedRowId "+this.state.selectedRowId);
 
+        /**
+         *
+         * @param editData
+         * @param success
+         */
         const handleClose = (editData, success) => {
-            console.log("render table handleClose ");
+            console.log("handleClose success "+success+" editData "+JSON.stringify(editData));
             if(this.state.isPopupEditorOpened) {
                 let item = {...this.state};
                 item.isPopupEditorOpened = false;
@@ -276,9 +339,8 @@ class GenericTable extends Component {
                         item.filteredRows = updatedRows;
                     }
                 }
-
                 this.setState(item);
-                console.log("editData "+editData);
+                //console.log("editData "+editData);
             } else {
                 this.setState({isPopupEditorOpened: false});
             }
@@ -292,7 +354,6 @@ class GenericTable extends Component {
         };
 
         let count = this.state.page*this.state.rowsPerPage+1;
-        //let CustomTag = `${"QuestionsOptions"}`;
         return (
             <ThemeProvider theme={commonData.theme}>
                 <Box>
@@ -305,10 +366,13 @@ class GenericTable extends Component {
                         <div>
                             <GenericEdit
                                 id={this.state.selectedRowId}
+                                parentSelectedRowId={this.props.parentSelectedRowId}
                                 closeFeedback={handleClose}
                                 selectedRowData={this.getSelectedRowData}
-                                apiName={this.state.apiName}
-                                columns={this.state.config.Columns}/>
+                                apiEditName={this.state.apiEditName}
+                                columns={this.state.config.Columns}
+                                tabLinkColumn={this.props.tabLinkColumn}
+                            />
                         </div>
                     </Dialog>
 
@@ -346,12 +410,18 @@ class GenericTable extends Component {
                         <TableContainer component={Paper} >
                             <Table
                                     sx={{
-                                        "& .MuiTableRow-root:hover": {
+                                        /*"& .MuiTableRow-root:hover": {
+                                            backgroundColor: "#AAC8C8",
+                                        },
+                                        "& .MuiTableRow-root:selected": {
                                             backgroundColor: "#FFC8C8",
                                         },
-                                        "& .Mui-selected": {
+                                        "&& .Mui-selected": {
                                             backgroundColor: "#FFC8C8",
                                         },
+                                        "& .selected": {
+                                            backgroundColor: "#FFC8C8",
+                                        },*/
                                         "& .MuiTableCell-root": {
                                             border: '0px solid black',
                                             "borderBottom": '1px solid #aaaaaa',
@@ -386,6 +456,28 @@ class GenericTable extends Component {
                                                                                         sx={{"display": col.columnVisible === false ? 'none' : ''}}>
                                                                 <img src={`${row[col.id]}`} width={100} sx={{border: 1, padding:"2px"}} alt="..."/>
                                                             </commonData.StyledTableCell>:
+                                                            col.type==="select"?
+                                                                col.selectApiColumnType==="image"?
+                                                                    row[col.id]===null||row[col.id]===undefined||row[col.id]===""?
+                                                                        <commonData.StyledTableCell key={i + "_" + row[col.id]}
+                                                                                                    align={col.numeric ? 'right' : 'left'}
+                                                                                                    sx={{"display": col.columnVisible === false ? 'none' : ''}}>
+                                                                        </commonData.StyledTableCell>:
+                                                                        <commonData.StyledTableCell key={i + "_" + row[col.id]}
+                                                                                                    align={col.numeric ? 'right' : 'left'}
+                                                                                                    sx={{"display": col.columnVisible === false ? 'none' : ''}}>
+                                                                            <img src={`${row[col.id][col.selectApiColumnName]}`} width={100} sx={{border: 1, padding:"2px"}} alt="..."/>
+                                                                        </commonData.StyledTableCell>:
+                                                                    row[col.id]===null||row[col.id]===undefined||row[col.id]===""?
+                                                                        <commonData.StyledTableCell key={i + "_" + row[col.id]}
+                                                                                                    align={col.numeric ? 'right' : 'left'}
+                                                                                                    sx={{"display": col.columnVisible === false ? 'none' : ''}}>
+                                                                        </commonData.StyledTableCell>:
+                                                                        <commonData.StyledTableCell key={i + "_" + row[col.id]}
+                                                                                                    align={col.numeric ? 'right' : 'left'}
+                                                                                                    sx={{"display": col.columnVisible === false ? 'none' : ''}}>
+                                                                            {row[col.id][col.selectApiColumnName]}
+                                                                        </commonData.StyledTableCell>:
                                                             <commonData.StyledTableCell key={i + "_" + row[col.id]}
                                                                                         align={col.numeric ? 'right' : 'left'}
                                                                                         sx={{"display": col.columnVisible === false ? 'none' : ''}}>
@@ -469,7 +561,8 @@ class GenericTable extends Component {
                                                 this.state.visibleTabIndex === index && (
                                                     <Box sx={{ p: 0 }}>
                                                         <Typography component={'span'} variant={'body2'}>
-                                                            {tab.tabObject==="QuestionsOptions"&&<GenericTable config={QuestionsOptions} isTab={true} parentSelectedRowId={this.state.selectedRowId}/>}
+                                                            {tab.tabObject==="QuestionsOptions"&&<GenericTable config={QuestionsOptions} isTab={true} parentSelectedRowId={this.state.selectedRowId} tabLinkColumn={tab.tabLinkColumn}/>}
+                                                            {tab.tabObject==="Questions"&&<GenericTable config={Questions} isTab={true} parentSelectedRowId={this.state.selectedRowId} tabLinkColumn={tab.tabLinkColumn}/>}
                                                         </Typography>
                                                     </Box>
                                                 )}

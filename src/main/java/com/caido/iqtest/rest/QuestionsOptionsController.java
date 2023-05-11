@@ -45,6 +45,7 @@ public class QuestionsOptionsController {
     
     @PostMapping("/questionsoptions")
     EntityModel<QuestionsOptions> create(@RequestBody QuestionsOptions o) {
+        System.out.println("Start QuestionsOptions create for object "+o.getIdQuestions().toString());
         return assembler.toModel(repository.save(o));
     }
 
