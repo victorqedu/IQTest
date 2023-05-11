@@ -58,6 +58,7 @@ class TestsQuestions extends Component {
     static DEFAULT_ROWS_PER_PAGE = 5;
     static apiName = "testsquestions";
     static apiEditName = "testsquestions";
+    static apiDeleteName = "testsquestions";
     static apiPath = "testsquestionsList";
 }
 export default TestsQuestions;

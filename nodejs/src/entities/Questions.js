@@ -83,6 +83,7 @@ class Questions extends Component {
     static DEFAULT_ORDER_BY = 'name';
     static DEFAULT_ROWS_PER_PAGE = 5;
     static apiName = "questions_findByTestId";
+    static apiDeleteName = "questions";
     static apiEditName = "questions";
     static apiPath = "questionsList";
 }

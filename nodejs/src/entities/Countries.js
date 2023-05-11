@@ -37,6 +37,7 @@ class Countries extends Component {
     static DEFAULT_ROWS_PER_PAGE = 5;
     static apiName = "countries";
     static apiEditName = "countries";
+    static apiDeleteName = "countries";
     static apiPath = "countriesList";
 }
 export default Countries;

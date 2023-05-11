@@ -48,6 +48,7 @@ class GenericTable extends Component {
             infoDialogMessage: undefined, // the message displayed in the info dialog
             apiName: this.props.config.apiName, // the name used to access the api eg: http://caido.ro:8080/api/<apiName>/ in order to retrieve the list of rows used to show in the table form
             apiEditName: this.props.config.apiEditName, // the name used to access the api eg: http://caido.ro:8080/api/<apiName>/ to add/edit a record
+            apiDeleteName: this.props.config.apiDeleteName, // the name used to access the api eg: http://caido.ro:8080/api/<apiName>/ to delete a record
             apiPath: this.props.config.apiPath, // how to extract the list of elements from the api JSON: countriesList
             config: this.props.config, // list of columns and their properties as defined in entieies directory
             visibleTabIndex: 0,
@@ -62,7 +63,7 @@ class GenericTable extends Component {
         let item = {...this.state};
         item.isAreYouSureDeleteOpened = false;
         if(Number.isInteger(parseInt(this.state.selectedRowId))) {
-            axios.delete("http://caido.ro:8080/api/"+this.state.apiName+"/"+this.state.selectedRowId,commonData.config)
+            axios.delete("http://caido.ro:8080/api/"+this.state.apiDeleteName+"/"+this.state.selectedRowId,commonData.config)
                 .then(() =>{
                     console.log('Record Deleted successfully for ID '+item.selectedRowId);
                     for (let i = 0; i < item.rows.length; i++) {
