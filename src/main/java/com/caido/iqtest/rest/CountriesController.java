@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/administrator")
 public class CountriesController {
     private final CountriesRepository repository;
     private final CountryModelAssembler assembler;

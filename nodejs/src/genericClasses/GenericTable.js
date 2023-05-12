@@ -47,6 +47,7 @@ class GenericTable extends Component {
             isInfoDialogOpened: false, // the info dialog
             infoDialogMessage: undefined, // the message displayed in the info dialog
             apiName: this.props.config.apiName, // the name used to access the api eg: http://caido.ro:8080/api/<apiName>/ in order to retrieve the list of rows used to show in the table form
+            apiPrefix: this.props.config.apiPrefix,
             apiEditName: this.props.config.apiEditName, // the name used to access the api eg: http://caido.ro:8080/api/<apiName>/ to add/edit a record
             apiDeleteName: this.props.config.apiDeleteName, // the name used to access the api eg: http://caido.ro:8080/api/<apiName>/ to delete a record
             apiPath: this.props.config.apiPath, // how to extract the list of elements from the api JSON: countriesList
@@ -63,7 +64,7 @@ class GenericTable extends Component {
         let item = {...this.state};
         item.isAreYouSureDeleteOpened = false;
         if(Number.isInteger(parseInt(this.state.selectedRowId))) {
-            axios.delete("http://caido.ro:8080/api/"+this.state.apiDeleteName+"/"+this.state.selectedRowId,commonData.config)
+            axios.delete("http://caido.ro:8080/api/"+this.state.apiPrefix+this.state.apiDeleteName+"/"+this.state.selectedRowId,commonData.config)
                 .then(() =>{
                     console.log('Record Deleted successfully for ID '+item.selectedRowId);
                     for (let i = 0; i < item.rows.length; i++) {
@@ -102,14 +103,17 @@ class GenericTable extends Component {
      * Obtains the data for the table form from the API
      */
     getDataFromApi() {
+        console.log("getDataFromApi ");
+
         if(this.props.isTab && this.props.parentSelectedRowId===undefined) { // nothing to do if this is a tab and no row is selected in the parent
             return;
         }
         let item = {...this.state};
-        let url = 'http://caido.ro:8080/api/'+this.state.apiName;
+        let url = 'http://caido.ro:8080/api/'+this.state.apiPrefix+this.state.apiName;
         if(this.props.parentSelectedRowId!==undefined) {
             url+="/"+this.props.parentSelectedRowId;
         }
+        item.selectedRowId = undefined;
         console.log("getDataFromApi "+url);
         axios.get(url, commonData.config)
             .then(res => {
@@ -304,8 +308,29 @@ class GenericTable extends Component {
             this.setState(item);
         }
     }
+
+    /**
+     * Checks if the current is allowed to show data in the table and if is allowed to add records
+     * (in tabs is not allowed to add/show data unless a record is selected in the parent)
+     * @returns {boolean}
+     */
+    checkReadyToShowData() {
+        let show = false;
+        if(Array.isArray(this.state.filteredRows)) {
+            if(this.props.isTab===undefined || this.props.isTab===false) {
+                show = true;
+            } else { // this.props.isTab is true
+                if(this.props.parentSelectedRowId!==undefined) { // a row is selected in the parent, display the data
+                    show = true;
+                }
+            }
+        }
+        console.log("checkReadyToShowData for "+this.state.apiName+" returning "+show);
+        return show;
+    }
+
     render() {
-        console.log("render this.selectedRowId "+this.state.selectedRowId);
+        console.log("render for "+this.state.apiName+" this.selectedRowId "+this.state.selectedRowId+" parentSelectedRowId "+this.props.parentSelectedRowId);
 
         /**
          *
@@ -370,6 +395,7 @@ class GenericTable extends Component {
                                 parentSelectedRowId={this.props.parentSelectedRowId}
                                 closeFeedback={handleClose}
                                 selectedRowData={this.getSelectedRowData}
+                                apiPrefix={this.state.apiPrefix}
                                 apiEditName={this.state.apiEditName}
                                 columns={this.state.config.Columns}
                                 tabLinkColumn={this.props.tabLinkColumn}
@@ -576,27 +602,6 @@ class GenericTable extends Component {
                 </Box>
             </ThemeProvider>
         );
-    }
-
-
-    /**
-     * Checks if the current is allowed to show data in the table and if is allowed to add records
-     * (in tabs is not allowed to add/show data unless a record is selected in the parent)
-     * @returns {boolean}
-     */
-    checkReadyToShowData() {
-        let show = false;
-        if(Array.isArray(this.state.filteredRows)) {
-            if(this.props.isTab===undefined || this.props.isTab===false) {
-                show = true;
-            } else { // this.props.isTab is true
-                if(this.props.parentSelectedRowId!==undefined) { // a row is selected in the parent, display the data
-                    show = true;
-                }
-            }
-        }
-        console.log("checkReadyToShowData for "+this.state.apiName+" returning "+show);
-        return show;
     }
 }
 

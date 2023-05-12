@@ -26,10 +26,10 @@ public class SecurityConfig {
         //
         http.csrf().disable().httpBasic().and()
                 .authorizeRequests()
-                .antMatchers(HttpMethod.GET, "/api/*").hasRole("ADMIN")
-                .antMatchers(HttpMethod.PUT, "/api/*").hasRole("ADMIN")
-                .antMatchers(HttpMethod.POST, "/api/*").hasRole("ADMIN")
-                .antMatchers(HttpMethod.DELETE, "/api/*").hasRole("ADMIN")
+                .antMatchers(HttpMethod.GET, "/api/administrator/*").hasRole("ADMIN")
+                .antMatchers(HttpMethod.PUT, "/api/administrator/*").hasRole("ADMIN")
+                .antMatchers(HttpMethod.POST, "/api/administrator/*").hasRole("ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/api/administrator/*").hasRole("ADMIN")
                 .anyRequest().permitAll()
                 ;
 //        http.csrf().disable()

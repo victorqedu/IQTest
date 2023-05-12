@@ -104,7 +104,8 @@ class GenericEdit extends Component {
             item.message = "Changes have been detected, saving data";
             this.setState(item);
             if (typeof this.state.editData.id == 'undefined' || this.state.editData.id === '') {
-                axios.post('http://caido.ro:8080/api/'+this.props.apiEditName, JSON.stringify(this.state.editData), commonData.config)
+                axios.post('http://caido.ro:8080/api/'+this.props.apiPrefix+this.props.apiEditName,
+                    JSON.stringify(this.state.editData), commonData.config)
                     .then(
                         res => {
                             console.log("POST Ret data: "+JSON.stringify(res.data));
@@ -123,7 +124,8 @@ class GenericEdit extends Component {
                         this.setState(item);
                     });
             } else {
-                axios.put("http://caido.ro:8080/api/"+this.props.apiEditName+"/"+this.props.id, JSON.stringify(this.state.editData), commonData.config)
+                axios.put("http://caido.ro:8080/api/"+this.props.apiPrefix+this.props.apiEditName+"/"+this.props.id,
+                    JSON.stringify(this.state.editData), commonData.config)
                     .then(
                         res => {
                             console.log("PUT Ret data: "+JSON.stringify(res.data));
@@ -204,7 +206,7 @@ class GenericEdit extends Component {
         for (const col of this.props.columns) {
             if(col.type==="select") {
                 if(item["selectData"][col.id]===undefined) {
-                    let selectOptions = await this.getSelectDataFromApi(col.selectApiName, col.selectApiParameter, col);
+                    let selectOptions = await this.getSelectDataFromApi(col.selectApiPrefix, col.selectApiName, col.selectApiParameter, col);
                     item["selectData"][col.id] = selectOptions;
                     console.log("In getAllSelectDataFromApi item[\"selectData\"]["+col.id+"] = "+selectOptions);
                     changed=true;
@@ -219,12 +221,12 @@ class GenericEdit extends Component {
     /**
      * Obtains the data for the select fields
      */
-    async getSelectDataFromApi(selectApiName, selectApiParameter, column) {
+    async getSelectDataFromApi(selectApiPrefix, selectApiName, selectApiParameter, column) {
         console.log("Start getSelectDataFromApi for selectApiName "+selectApiName+" selectApiParameter "+selectApiParameter+" this.state.editData[selectApiParameter]: "+this.state.editData[selectApiParameter]);
         if(this.state.editData[selectApiParameter]===undefined) {
             return;
         }
-        let url = 'http://caido.ro:8080/api/'+selectApiName+"/"+this.state.editData[selectApiParameter];
+        let url = 'http://caido.ro:8080/api/'+selectApiPrefix+selectApiName+"/"+this.state.editData[selectApiParameter];
         let rows = undefined;
         console.log("getSelectDataFromApi "+url+" this.state.editData[selectApiParameter] "+this.state.editData[selectApiParameter]+" selectApiName "+selectApiName+" selectApiParameter "+selectApiParameter);
         await axios.get(url, commonData.config)
