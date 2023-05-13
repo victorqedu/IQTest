@@ -24,7 +24,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.stereotype.Component;
 
 @RestController
-@RequestMapping("/api/administrator")
+@RequestMapping("/api")
 public class TestsController {
     private final TestsRepository repository;
     private final TestModelAssembler assembler;

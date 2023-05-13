@@ -47,7 +47,6 @@ class GenericTable extends Component {
             isInfoDialogOpened: false, // the info dialog
             infoDialogMessage: undefined, // the message displayed in the info dialog
             apiName: this.props.config.apiName, // the name used to access the api eg: http://caido.ro:8080/api/<apiName>/ in order to retrieve the list of rows used to show in the table form
-            apiPrefix: this.props.config.apiPrefix,
             apiEditName: this.props.config.apiEditName, // the name used to access the api eg: http://caido.ro:8080/api/<apiName>/ to add/edit a record
             apiDeleteName: this.props.config.apiDeleteName, // the name used to access the api eg: http://caido.ro:8080/api/<apiName>/ to delete a record
             apiPath: this.props.config.apiPath, // how to extract the list of elements from the api JSON: countriesList
@@ -64,7 +63,7 @@ class GenericTable extends Component {
         let item = {...this.state};
         item.isAreYouSureDeleteOpened = false;
         if(Number.isInteger(parseInt(this.state.selectedRowId))) {
-            axios.delete("http://caido.ro:8080/api/"+this.state.apiPrefix+this.state.apiDeleteName+"/"+this.state.selectedRowId,commonData.config)
+            axios.delete("http://caido.ro:8080/api/"+this.state.apiDeleteName+"/"+this.state.selectedRowId,commonData.config)
                 .then(() =>{
                     console.log('Record Deleted successfully for ID '+item.selectedRowId);
                     for (let i = 0; i < item.rows.length; i++) {
@@ -109,7 +108,7 @@ class GenericTable extends Component {
             return;
         }
         let item = {...this.state};
-        let url = 'http://caido.ro:8080/api/'+this.state.apiPrefix+this.state.apiName;
+        let url = 'http://caido.ro:8080/api/'+this.state.apiName;
         if(this.props.parentSelectedRowId!==undefined) {
             url+="/"+this.props.parentSelectedRowId;
         }
@@ -395,7 +394,6 @@ class GenericTable extends Component {
                                 parentSelectedRowId={this.props.parentSelectedRowId}
                                 closeFeedback={handleClose}
                                 selectedRowData={this.getSelectedRowData}
-                                apiPrefix={this.state.apiPrefix}
                                 apiEditName={this.state.apiEditName}
                                 columns={this.state.config.Columns}
                                 tabLinkColumn={this.props.tabLinkColumn}

@@ -1,9 +1,13 @@
-import {Component} from "react";
+import React, {Component} from "react";
+import {Button} from "@mui/material";
+import {Form} from "reactstrap";
 
 class Home extends Component {
     render() {
         return (
-            <h1>Home</h1>
+            <Form onSubmit={this.handleSubmit}>
+                <Button variant="outlined" type="submit">Take the test</Button>
+            </Form>
         );
     }
 }

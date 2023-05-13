@@ -37,7 +37,6 @@ class Questions extends Component {
             disablePadding: false,
             label: 'Correct option',
             type: 'select',
-            selectApiPrefix: "administrator/",
             selectApiName: "questionsoptions_findByQuestionId",
             selectApiParameter: "id", // the name of the column from the current object that will be used in the selectApiName query
             selectApiPath: "questionsOptionsList",
@@ -83,7 +82,6 @@ class Questions extends Component {
     static DEFAULT_ORDER = 'asc';
     static DEFAULT_ORDER_BY = 'name';
     static DEFAULT_ROWS_PER_PAGE = 5;
-    static apiPrefix = "administrator/";
     static apiName = "questions_findByTestId";
     static apiDeleteName = "questions";
     static apiEditName = "questions";

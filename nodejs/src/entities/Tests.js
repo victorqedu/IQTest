@@ -36,7 +36,6 @@ class Tests extends Component {
     static DEFAULT_ORDER = 'asc';
     static DEFAULT_ORDER_BY = 'name';
     static DEFAULT_ROWS_PER_PAGE = 5;
-    static apiPrefix = "administrator/";
     static apiName = "tests";
     static apiDeleteName = "tests";
     static apiEditName = "tests";

@@ -14,10 +14,10 @@ class commonData extends Component {
             "Accept": "*/*",
             "Content-Type": "application/json",
             //"Authorization": +this.basicAuth,
-            //credentials: 'same-origin',
+//            credentials: 'same-origin',
         },
         //mode: 'no-cors',
-        /*auth: {
+/*        auth: {
             username: "victor",
             password: "test",
         },*/
