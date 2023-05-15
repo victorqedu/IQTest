@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import {createTheme, styled, TableCell, tableCellClasses} from "@mui/material";
+import axios from "axios";
 /*import { ThemeProvider, createMuiTheme, makeStyles } from '@material-ui/core/styles';*/
 
 class commonData extends Component {
@@ -157,6 +158,26 @@ class commonData extends Component {
         }
         return message;
     }
+
+    static async getDataFromApi(apiName, filterParameter, apiPath) {
+        console.log("Start getDataFromApi "+apiPath);
+        let url = 'http://caido.ro:8080/api/'+apiName;
+        if(filterParameter!==undefined) {
+            url+="/"+filterParameter;
+        }
+        let data;
+        await axios.get(url, commonData.config)
+            .then(res => {
+                data = res.data["_embedded"][apiPath];
+                console.log(res) ;
+            })
+            .catch(error => {
+                console.log("Error is"+error);
+            });
+        console.log("end getDataFromApi data.length : "+data.length);
+        return data;
+    }
+
 }
 
 export default commonData;

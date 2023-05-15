@@ -27,17 +27,10 @@ public class SecurityConfig {
         http.csrf().disable().httpBasic().and()
                 .authorizeRequests()
                 .antMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
-                //.antMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
-                //.antMatchers(HttpMethod.GET, "/api/administrator/*").hasRole("ADMIN")
-                //.antMatchers(HttpMethod.GET, "/api/administrator/*").anonymous()
-                //.antMatchers(HttpMethod.GET, "/api/administrator/countries").hasRole("ADMIN")
-                //.antMatchers(HttpMethod.GET, "/api/administrator/tests").permitAll()
-                //.antMatchers(HttpMethod.GET, "/api/administrator/*").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/**").permitAll()
-                .antMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
-                //.anyRequest().permitAll()
+                .antMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()// allow OPTIONS for CORS preflight
                 .anyRequest().denyAll()
                 ;
 //        http.csrf().disable()
