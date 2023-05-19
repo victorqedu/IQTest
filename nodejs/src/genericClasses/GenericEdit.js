@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Box, Button, Container, Input, MenuItem, Select, TextField} from "@mui/material";
+import {Box, Button, Container, Input, MenuItem, Select, TextField, Typography} from "@mui/material";
 import axios from "axios";
 import {Form, FormGroup} from "reactstrap";
 import commonData from "../genericClasses/commonData";
@@ -7,7 +7,7 @@ import commonData from "../genericClasses/commonData";
 class GenericEdit extends Component {
     constructor(props) {
         super(props);
-        console.log("Start constructor GE "+JSON.stringify(this.props.selectedRowData()));
+        //console.log("Start constructor GE "+JSON.stringify(this.props.selectedRowData()));
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.closePopup = this.closePopup.bind(this);
@@ -20,7 +20,7 @@ class GenericEdit extends Component {
             // I'm making a copy of the row as described here: https://stackoverflow.com/questions/5055746/cloning-an-object-in-node-js
             // If I don't make the copy and pass this row(this.props.selectedRowData()) to the GenericEdit class than every time I will change something in the EditClass,
             // the change will go in the table rows without saving the data(when pressing tha cancel button instead of save)
-            editData: this.props.id!==undefined?JSON.parse(JSON.stringify(this.props.selectedRowData())):{},
+            editData: (this.props.id!==undefined||this.props.noRows===true)?JSON.parse(JSON.stringify(this.props.selectedRowData())):{},
             selectData:{},
             changed: false,
             message: "",
@@ -44,7 +44,7 @@ class GenericEdit extends Component {
         let name = target.getAttribute("id");
         console.log("handleChange for name "+name);
         let item = {...this.state};
-        item.changed=1;
+        item.message = "";
         const obj = {};
         for (const key in item.editData) {
             if (item.editData.hasOwnProperty(key)) {
@@ -57,17 +57,39 @@ class GenericEdit extends Component {
                     if(target.files[0]!==undefined) {
                         let file = target.files[0];
                         obj[name] = await this.getBase64(file);
+                        item.changed=1;
                         console.log("changed "+name+" with value "+target.files[0].name+" b64 "+obj[name]);
+                    }
+                } else if(col.type==="integer") {
+                    console.log("handleChange for name "+name+" col integer checking "+target.value+" is integer");
+                    const re = /^\d*$/;
+                    if(target.value.match(re)) {
+                        console.log("handleChange for name "+name+" is integer");
+                        if(col.minValue!=="" && target.value !== "" && col.minValue > parseInt(target.value))  {
+                            item.message = "Minimum value for the field \""+col.label+"\" is "+col.minValue;
+                            item.changed=1;
+                        } else if (col.maxValue!=="" && target.value !== "" && col.maxValue < parseInt(target.value)) {
+                            item.message = "Maximum value for the field \""+col.label+"\" is "+col.maxValue;
+                            item.changed=1;
+                        } else {
+                            obj[name] = target.value;
+                            item.changed=1;
+                            console.log("changed "+name+" with value "+target.value);
+                        }
+                    } else {
+                        console.log("handleChange for name "+name+" is not integer");
                     }
                 } else {
                     obj[name] = target.value;
+                    item.changed=1;
                     console.log("changed "+name+" with value "+target.value);
                 }
             }
         }
-
-        item.editData = obj;
-        this.setState(item);
+        if(item.changed===1) {
+            item.editData = obj;
+            this.setState(item);
+        }
     }
 
     /**
@@ -101,47 +123,59 @@ class GenericEdit extends Component {
         if(this.state.changed===1) {
             console.log("Sending JSON data :"+JSON.stringify(this.state.editData));
             let item = {...this.state};
-            item.message = "Changes have been detected, saving data";
-            this.setState(item);
-            if (typeof this.state.editData.id == 'undefined' || this.state.editData.id === '') {
-                axios.post('http://caido.ro:8080/api/'+this.props.apiEditName,
-                    JSON.stringify(this.state.editData), commonData.config)
-                    .then(
-                        res => {
-                            console.log("POST Ret data: "+JSON.stringify(res.data));
+            item.message = "";
+            let error = false;
+            for (const col of this.props.columns) {
+                if(col.mandatory && (item.editData[col.id]==="" || item.editData[col.id]===null || item.editData[col.id]===undefined)) {
+                    error = true;
+                    item.message += "The field named \""+col.label+"\" is required, please insert a value.&";
+                }
+            }
+            if(!error) {
+                item.message = "Changes have been detected, saving data";
+                this.setState(item);
+                if (typeof this.state.editData.id == 'undefined' || this.state.editData.id === '') {
+                    axios.post('http://caido.ro:8080/api/'+this.props.apiEditName,
+                        JSON.stringify(this.state.editData), commonData.config)
+                        .then(
+                            res => {
+                                console.log("POST Ret data: "+JSON.stringify(res.data));
+                                let item = {...this.state};
+                                item.editData = res.data;
+                                item.success = true;
+                                this.setState(item, ()=>{
+                                    this.closePopup();
+                                });
+                            }
+                        )
+                        .catch(error => {
+                            console.log("POST Error");
                             let item = {...this.state};
-                            item.editData = res.data;
-                            item.success = true;
-                            this.setState(item, ()=>{
-                                this.closePopup();
-                            });
-                        }
-                    )
-                    .catch(error => {
-                        console.log("POST Error");
-                        let item = {...this.state};
-                        item.message = commonData.parseError(error);
-                        this.setState(item);
-                    });
+                            item.message = commonData.parseError(error);
+                            this.setState(item);
+                        });
+                } else {
+                    axios.put("http://caido.ro:8080/api/"+this.props.apiEditName+"/"+this.props.id,
+                        JSON.stringify(this.state.editData), commonData.config)
+                        .then(
+                            res => {
+                                console.log("PUT Ret data: "+JSON.stringify(res.data));
+                                let item = {...this.state};
+                                item.success = true;
+                                item.editData = res.data;
+                                this.setState(item, ()=>{
+                                    this.closePopup();
+                                });
+                            }
+                        )
+                        .catch(error => {
+                            let item = {...this.state};
+                            item.message = commonData.parseError(error);
+                            this.setState(item);
+                        });
+                }
             } else {
-                axios.put("http://caido.ro:8080/api/"+this.props.apiEditName+"/"+this.props.id,
-                    JSON.stringify(this.state.editData), commonData.config)
-                    .then(
-                        res => {
-                            console.log("PUT Ret data: "+JSON.stringify(res.data));
-                            let item = {...this.state};
-                            item.success = true;
-                            item.editData = res.data;
-                            this.setState(item, ()=>{
-                                this.closePopup();
-                            });
-                        }
-                    )
-                    .catch(error => {
-                        let item = {...this.state};
-                        item.message = commonData.parseError(error);
-                        this.setState(item);
-                    });
+                this.setState(item);
             }
         } else {
             let item = {...this.state};
@@ -223,10 +257,14 @@ class GenericEdit extends Component {
      */
     async getSelectDataFromApi(selectApiName, selectApiParameter, column) {
         console.log("Start getSelectDataFromApi for selectApiName "+selectApiName+" selectApiParameter "+selectApiParameter+" this.state.editData[selectApiParameter]: "+this.state.editData[selectApiParameter]);
-        if(this.state.editData[selectApiParameter]===undefined) {
+        if(column.editable===false) {
             return;
         }
         let url = 'http://caido.ro:8080/api/'+selectApiName+"/"+this.state.editData[selectApiParameter];
+        if(this.state.editData[selectApiParameter]===undefined) {
+            url = 'http://caido.ro:8080/api/'+selectApiName;
+        }
+
         let rows = undefined;
         console.log("getSelectDataFromApi "+url+" this.state.editData[selectApiParameter] "+this.state.editData[selectApiParameter]+" selectApiName "+selectApiName+" selectApiParameter "+selectApiParameter);
         await axios.get(url, commonData.config)
@@ -247,6 +285,7 @@ class GenericEdit extends Component {
     render() {
         console.log("Start render GE "+JSON.stringify(this.state.editData));
         return (<Container>
+            <br/>
             {this.props.id ? 'Edit ' : 'Add'}
             <Form onSubmit={this.handleSubmit}>
                 {
@@ -265,16 +304,16 @@ class GenericEdit extends Component {
                                     </Box>:
                                     column.type==="select"?
                                         <Box sx={{padding:"2px", borderRadius: '2px'}}>
-                                            {column.label}:
+                                            {column.label}{column.mandatory?"*":""}  :
                                             <Select
                                                 id={column.id}
                                                 name={column.id}
                                                 label={column.label}
                                                 variant="outlined"
-                                                value={this.state.editData[column.id]!==null&&this.state.editData[column.id]!==undefined?this.state.editData[column.id]["id"]:''}
+                                                value={Array.isArray(this.state.selectData[column.id])&&this.state.editData[column.id]!==null&&this.state.editData[column.id]!==undefined?this.state.editData[column.id]["id"]:''}
                                                 onChange={this.handleChangeSelect}
                                                 sx={{width: "100%"}}>
-                                                <MenuItem key={0} value="">No value</MenuItem>
+                                                {column.notNull?"":<MenuItem key={0} value="">No value</MenuItem>}
                                                 {
                                                     Array.isArray(this.state.selectData[column.id])?
                                                         this.state.selectData[column.id].map((row,index) => (
@@ -289,13 +328,15 @@ class GenericEdit extends Component {
                                             <br/>
                                         </Box>:
                                         <Box>
+                                            {column.label}{column.mandatory?"*":""}  :
                                             <TextField
                                                 id={column.id}
-                                                label={column.label}
+                                                //label={column.label}
                                                 variant="outlined"
                                                 value={this.state.editData[column.id]||''}
                                                 onChange={this.handleChange}
                                                 autoComplete='off'
+                                                type={column.type==="numeric"?"number":""}
                                                 sx={{width: "100%"}}/>
                                             <br/>
                                             <br/>
@@ -313,14 +354,16 @@ class GenericEdit extends Component {
                         </Box>
                     ))
                 }
-                <br/>
-                <br/>
                 <FormGroup>
                     <Button variant="outlined" type="submit">Save</Button>{' '}
                     <Button variant="outlined" onClick={this.closePopup}>Cancel</Button>
                 </FormGroup>
+                <br/>
+
+                {this.state.message!==""?this.state.message.split("&").map((message, index)=>(<Typography key={"message"+index} color="#AA1111">{message}</Typography>)):"..."}
+                <br/>
+                <br/>
             </Form>
-            {this.state.message||''}
         </Container>);
     }
 

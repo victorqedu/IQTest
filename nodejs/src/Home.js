@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Box, Button, Input, Typography} from "@mui/material";
+import {Box, Button, Input} from "@mui/material";
 import {Form} from "reactstrap";
 import commonData from "./genericClasses/commonData";
 import Questions from "./entities/Questions";
@@ -40,7 +40,7 @@ class Home extends Component {
                 </Box>
             );
         } else {
-            return(<ShowTestsQuestions questions={this.state.questions}/>);
+            return(<ShowTestsQuestions questions={this.state.questions} testId={this.state.testId}/>);
         }
     }
 }

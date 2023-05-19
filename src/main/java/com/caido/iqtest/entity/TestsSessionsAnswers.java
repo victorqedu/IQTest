@@ -1,7 +1,9 @@
 package com.caido.iqtest.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.sun.istack.NotNull;
 import java.io.Serializable;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -38,7 +40,8 @@ public class TestsSessionsAnswers implements Serializable {
             this.id = id;
     }
 
-    @ManyToOne
+    @JsonBackReference
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="id_tests_sessions")
     @NotNull
     private TestsSessions idTestsSessions;
@@ -50,13 +53,13 @@ public class TestsSessionsAnswers implements Serializable {
     }
 
     @ManyToOne
-    @JoinColumn(name="id_tests_questions")
+    @JoinColumn(name="id_questions")
     @NotNull
     private Questions idQuestions;
-    public Questions getIdTestsQuestions() {
+    public Questions getIdQuestions() {
         return idQuestions;
     }
-    public void setQuestions(Questions idQuestions) {
+    public void setIdQuestions(Questions idQuestions) {
         this.idQuestions = idQuestions;
     }
     

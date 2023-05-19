@@ -18,14 +18,12 @@ public class SecurityConfig {
         //I will keept the role with ROLE_ in front) 
         return new JdbcUserDetailsManager(dataSource);
     }
-    
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // Cross Site Request Forgery disabled when I secure a REST API(these are the recomandations)
-        // I found no documentation about how to use the filter chain but this is what I understod:
-        //
         http.csrf().disable().httpBasic().and()
                 .authorizeRequests()
+                .antMatchers(HttpMethod.POST, "/api/testssessions").permitAll()
                 .antMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")

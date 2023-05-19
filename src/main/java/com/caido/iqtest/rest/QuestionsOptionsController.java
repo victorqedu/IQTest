@@ -100,7 +100,7 @@ class QuestionOptionModelAssembler implements RepresentationModelAssembler<Quest
   public EntityModel<QuestionsOptions> toModel(QuestionsOptions c) {
     return EntityModel.of(c, 
         linkTo(methodOn(QuestionsOptionsController.class).getOne(c.getId())).withSelfRel(),
-        linkTo(methodOn(QuestionsOptionsController.class).getAll()).withRel("tests"));
+        linkTo(methodOn(QuestionsOptionsController.class).getAll()).withRel("questionsoptions"));
   }
 }
 
