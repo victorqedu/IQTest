@@ -34,7 +34,7 @@ class Home extends Component {
             return (
                 <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" sx={ { backgroundColor: "lightyellow", backgroundImage: `url(${bg})`,backgroundSize: "cover",color: "#ffffff" }}>
                     <Form onSubmit={this.handleSubmit}>
-                        <Input type="hidden" name="test_id" id="test_id" value="2"/>
+                        <Input type="hidden" name="test_id" id="test_id" value="9"/>
                         <Button variant="outlined" type="submit">Test your IQ</Button>
                     </Form>
                 </Box>

@@ -58,6 +58,12 @@ public class TestsSessionsController {
         return assembler.toModel(c);
     }
 
+    @GetMapping("/testssessionpoints/{id}")
+    Integer getPoints(@PathVariable Long id) {
+        System.out.println("Start getPoints for id "+id);
+        return repository.getPoints(id);
+    }
+
     @PutMapping("/testssessions/{id}")
     EntityModel<TestsSessions> replace(@RequestBody TestsSessions c, @PathVariable Long id) {
         return assembler.toModel(repository.save(c));

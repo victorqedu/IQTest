@@ -21,12 +21,14 @@ public class Questions implements Serializable {
     public Questions() {
     }
 
-    public Questions(Long id, String description, QuestionsOptions idQuestionsOptionsCorrect, String image, Tests idTests, Integer orderq) {
+    public Questions(Long id, String description, QuestionsOptions idQuestionsOptionsCorrect, String image, Tests idTests, Integer orderq, Integer points, String explication) {
         this.id = id;
         this.description = description;
         this.idQuestionsOptionsCorrect = idQuestionsOptionsCorrect;
         this.image = image;
         this.idTests = idTests;
+        this.points = points;
+        this.explication = explication;
     }
     
     @Id
@@ -92,4 +94,22 @@ public class Questions implements Serializable {
     public void setOrderq(Integer orderq) {
             this.orderq = orderq;
     }
+    
+    @Column(name="points")
+    private Integer points;
+    public Integer getPoints() {
+            return points;
+    }
+    public void setPoints(Integer points) {
+            this.points = points;
+    }
+    
+    @Column(name="explication")
+    private String explication;
+    public String getExplication() {
+            return explication;
+    }
+    public void setExplication(String explication) {
+            this.explication = explication;
+    }     
 }

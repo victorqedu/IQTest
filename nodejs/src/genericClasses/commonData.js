@@ -174,7 +174,7 @@ class commonData extends Component {
             .catch(error => {
                 console.log("Error is"+error);
             });
-        console.log("end getDataFromApi data.length : "+data.length);
+        //console.log("end getDataFromApi data.length : "+data.length);
         return data;
     }
 

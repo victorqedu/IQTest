@@ -16,6 +16,7 @@ import QuestionsOptions from "../entities/QuestionsOptions";
 import bg from "../images/bg.jpg";
 import GenericEdit from "../genericClasses/GenericEdit";
 import TestsSessions from "../entities/TestsSessions";
+import axios from "axios";
 
 class ShowTestsQuestions extends Component {
     constructor(props) {
@@ -35,6 +36,7 @@ class ShowTestsQuestions extends Component {
             currentQuestion: 0,
             isAreYouSureOpen: false,
             isPopupEditorOpened: false,
+            result: undefined,
         };
     }
 
@@ -143,7 +145,19 @@ class ShowTestsQuestions extends Component {
             this.setState({isAreYouSureOpen: false});
         };
         const handleClose = (editData, success) => {
-            this.setState({isPopupEditorOpened: false});
+            if(success) {
+                axios.get("http://caido.ro:8080/api/testssessionpoints/"+editData.id, commonData.config)
+                    .then(res => {
+                        console.log(res.data);
+                        let item = {...this.state};
+                        item.isPopupEditorOpened = false;
+                        item.result = res.data;
+                        this.setState(item);
+                    })
+                    .catch(error => {
+                        console.log("Error is"+error);
+                    });
+            }
         };
 
         console.log("current q: "+this.state.currentQuestion+" currentQuestionOptions.size "+this.state.currentQuestionOptions.length+" isAreYouSureOpen "+this.state.isAreYouSureOpen);
@@ -182,68 +196,80 @@ class ShowTestsQuestions extends Component {
                         />
                     </div>
                 </Dialog>
-                <Paper sx={{ width: '750px', mb: 2, padding: 1}}>
-                    <br/>
-                    <br/>
-                    <br/>
-                        {
-                            Array.isArray(this.state.currentQuestionOptions) &&
-                            <TableContainer component={Paper} >
-                                <Table border={0} >
-                                    <TableBody>
-                                        <TableRow>
-                                            <TableCell sx={{padding: 0}} align="center">
-                                                <b>{this.state.questions[this.state.currentQuestion]["description"]}</b>
-                                                <br/>
-                                                <img src={`${this.state.questions[this.state.currentQuestion]["image"]}`} width={300} sx={{border: 1, padding:"2px"}} alt="..."/>
-                                            </TableCell>
-                                            <TableCell>
-                                                <TableContainer component={Paper}>
-                                                    <Table sx={{width:300}} border={0}>
-                                                        <TableBody>
-                                                            <TableRow>
-                                                                {this.answerCell(0)}
-                                                                {this.answerCell(1)}
-                                                                {this.answerCell(2)}
-                                                            </TableRow>
-                                                            <TableRow>
-                                                                {this.answerCell(3)}
-                                                                {this.answerCell(4)}
-                                                                {this.answerCell(5)}
-                                                            </TableRow>
-                                                        </TableBody>
-                                                    </Table>
-                                                </TableContainer>
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
-                        }
-                    <br/>
-                    <Box align="center">
-                        {/*<Button id="firstPage" key="firstPage" variant="outlined" sx={{width: 100}} onClick={this.handleQuestionChange}>First</Button>*/}
-                        {
-                            Array.isArray(this.state.questions) &&
-                            this.state.questions.map((row, index) => {
-                                let variant = "outlined";
-                                let color = "error";
-                                if(this.state.currentQuestion===index) {
-                                    variant = "contained";
+                {
+                    this.state.result===undefined?
+                        <Paper sx={{ width: '750px', mb: 2, padding: 1}}>
+                            <br/>
+                            <br/>
+                            <br/>
+                            {
+                                Array.isArray(this.state.currentQuestionOptions) &&
+                                <TableContainer component={Paper} >
+                                    <Table border={0} >
+                                        <TableBody>
+                                            <TableRow>
+                                                <TableCell sx={{padding: 0}} align="center">
+                                                    <b>{this.state.questions[this.state.currentQuestion]["description"]}</b>
+                                                    <br/>
+                                                    <img src={`${this.state.questions[this.state.currentQuestion]["image"]}`} width={300} sx={{border: 1, padding:"2px"}} alt="..."/>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <TableContainer component={Paper}>
+                                                        <Table sx={{width:300}} border={0}>
+                                                            <TableBody>
+                                                                <TableRow>
+                                                                    {this.answerCell(0)}
+                                                                    {this.answerCell(1)}
+                                                                    {this.answerCell(2)}
+                                                                </TableRow>
+                                                                <TableRow>
+                                                                    {this.answerCell(3)}
+                                                                    {this.answerCell(4)}
+                                                                    {this.answerCell(5)}
+                                                                </TableRow>
+                                                            </TableBody>
+                                                        </Table>
+                                                    </TableContainer>
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            }
+                            <br/>
+                            <Box align="center">
+                                {
+                                    Array.isArray(this.state.questions) &&
+                                    this.state.questions.map((row, index) => {
+                                        let variant = "outlined";
+                                        let color = "error";
+                                        if(this.state.currentQuestion===index) {
+                                            variant = "contained";
+                                        }
+                                        if(this.state.questionsAnswers[index]!==undefined) {
+                                            color = "success";
+                                        }
+                                        console.log("index "+index+" color "+color);
+                                        return (
+                                            <Button id={index} key={"page"+index} variant={variant} onClick={this.handleQuestionChange} color={color}><b>{index+1}</b></Button>
+                                        )
+                                    })
                                 }
-                                if(this.state.questionsAnswers[index]!==undefined) {
-                                    color = "success";
-                                }
-                                console.log("index "+index+" color "+color);
-                                return (
-                                    <Button id={index} key={"page"+index} variant={variant} onClick={this.handleQuestionChange} color={color}><b>{index+1}</b></Button>
-                                )
-                            })
-                        }
-                        {/*<Button id="lastPage" key="lastPage" variant="outlined" sx={{width: 100}} onClick={this.handleQuestionChange}>Last</Button>*/}
-                        <Button id="submit" key="submit" variant="outlined" sx={{width: 200}} onClick={this.handleCheckSubmit}>Submit answers</Button>
-                    </Box>
-                </Paper>
+                                {/*<Button id="lastPage" key="lastPage" variant="outlined" sx={{width: 100}} onClick={this.handleQuestionChange}>Last</Button>*/}
+                                <Button id="submit" key="submit" variant="outlined" sx={{width: 200}} onClick={this.handleCheckSubmit}>Submit answers</Button>
+                            </Box>
+                        </Paper> :
+                        <Paper sx={{ width: '750px', mb: 2, padding: 1}}>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <h1 align="center">Your Iq is {this.state.result}</h1>
+                            <br/>
+                            <br/>
+                            <br/>
+                        </Paper>
+                }
+
             </Box>
         );
     }

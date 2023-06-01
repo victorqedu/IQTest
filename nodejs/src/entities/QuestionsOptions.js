@@ -7,7 +7,7 @@ class QuestionsOptions extends Component {
             disablePadding: false,
             label: 'ID',
             type: 'integer',
-            columnVisible: false,
+            columnVisible: true,
             size: 'small',
             editable: false,
         },
