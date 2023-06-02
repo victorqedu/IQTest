@@ -22,6 +22,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf().disable().httpBasic().and()
+                .requiresChannel(channel -> channel.anyRequest().requiresSecure())
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/api/testssessions").permitAll()
                 .antMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")

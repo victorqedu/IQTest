@@ -7,7 +7,14 @@ class commonData extends Component {
     static username = 'victor';
     static password = 'test';
     static basicAuth = 'Basic ' + btoa(this.username + ':' + this.password);
+    static API_PROTOCOL = "https";
+    static API_HOST = "www.caido.ro";
+    static API_PORT = "8443";
+    static API_PATH = "api/"
 
+    static getApiLink() {
+        return this.API_PROTOCOL+"://"+this.API_HOST+":"+this.API_PORT+"/"+this.API_PATH;
+    }
     static config = {
         withCredentials: true,
         //withCredentials: false,
@@ -161,7 +168,7 @@ class commonData extends Component {
 
     static async getDataFromApi(apiName, filterParameter, apiPath) {
         console.log("Start getDataFromApi "+apiPath);
-        let url = 'http://caido.ro:8080/api/'+apiName;
+        let url = this.getApiLink()+apiName;
         if(filterParameter!==undefined) {
             url+="/"+filterParameter;
         }

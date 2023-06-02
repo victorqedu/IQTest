@@ -63,7 +63,7 @@ class GenericTable extends Component {
         let item = {...this.state};
         item.isAreYouSureDeleteOpened = false;
         if(Number.isInteger(parseInt(this.state.selectedRowId))) {
-            axios.delete("http://caido.ro:8080/api/"+this.state.apiDeleteName+"/"+this.state.selectedRowId,commonData.config)
+            axios.delete(commonData.getApiLink()+this.state.apiDeleteName+"/"+this.state.selectedRowId,commonData.config)
                 .then(() =>{
                     console.log('Record Deleted successfully for ID '+item.selectedRowId);
                     for (let i = 0; i < item.rows.length; i++) {
@@ -108,7 +108,7 @@ class GenericTable extends Component {
             return;
         }
         let item = {...this.state};
-        let url = 'http://caido.ro:8080/api/'+this.state.apiName;
+        let url = commonData.getApiLink()+this.state.apiName;
         if(this.props.parentSelectedRowId!==undefined) {
             url+="/"+this.props.parentSelectedRowId;
         }

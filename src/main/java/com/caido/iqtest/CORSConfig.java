@@ -12,7 +12,7 @@ public class CORSConfig implements WebMvcConfigurer  {
     public void addCorsMappings(CorsRegistry registry) {
 //        registry.addMapping("/**");
         registry.addMapping("/**")
-                .allowedOrigins("http://caido.ro:3000")
+                .allowedOrigins("https://www.caido.ro:3000", "https://caido.ro:3000")
                 .allowedMethods("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowCredentials(true)
                 .allowedHeaders("Content-Type",

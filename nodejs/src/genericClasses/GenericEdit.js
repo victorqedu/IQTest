@@ -135,7 +135,7 @@ class GenericEdit extends Component {
                 item.message = "Changes have been detected, saving data";
                 this.setState(item);
                 if (typeof this.state.editData.id == 'undefined' || this.state.editData.id === '') {
-                    axios.post('http://caido.ro:8080/api/'+this.props.apiEditName,
+                    axios.post(commonData.getApiLink()+this.props.apiEditName,
                         JSON.stringify(this.state.editData), commonData.config)
                         .then(
                             res => {
@@ -155,7 +155,7 @@ class GenericEdit extends Component {
                             this.setState(item);
                         });
                 } else {
-                    axios.put("http://caido.ro:8080/api/"+this.props.apiEditName+"/"+this.props.id,
+                    axios.put(commonData.getApiLink()+this.props.apiEditName+"/"+this.props.id,
                         JSON.stringify(this.state.editData), commonData.config)
                         .then(
                             res => {
@@ -260,9 +260,9 @@ class GenericEdit extends Component {
         if(column.editable===false) {
             return;
         }
-        let url = 'http://caido.ro:8080/api/'+selectApiName+"/"+this.state.editData[selectApiParameter];
+        let url = commonData.getApiLink()+selectApiName+"/"+this.state.editData[selectApiParameter];
         if(this.state.editData[selectApiParameter]===undefined) {
-            url = 'http://caido.ro:8080/api/'+selectApiName;
+            url = commonData.getApiLink()+selectApiName;
         }
 
         let rows = undefined;
