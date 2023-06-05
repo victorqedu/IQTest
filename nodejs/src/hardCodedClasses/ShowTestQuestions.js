@@ -146,7 +146,7 @@ class ShowTestsQuestions extends Component {
         };
         const handleClose = (editData, success) => {
             if(success) {
-                axios.get(commonData.getApiLink()+"/testssessionpoints/"+editData.id, commonData.config)
+                axios.get(commonData.getApiLink()+"testssessionpoints/"+editData.id, commonData.config)
                     .then(res => {
                         console.log(res.data);
                         let item = {...this.state};
