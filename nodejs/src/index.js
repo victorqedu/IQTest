@@ -3,11 +3,17 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { Helmet } from 'react-helmet';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
 /*  <React.StrictMode>*/
-    <App />
+    <App>
+        <Helmet>
+            <title>Iq test</title>
+            <meta name="description" content="IQ test"/>
+        </Helmet>
+    </App>
   /*</React.StrictMode>*/
 );
 

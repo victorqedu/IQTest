@@ -17,6 +17,7 @@ import bg from "../images/bg.jpg";
 import GenericEdit from "../genericClasses/GenericEdit";
 import TestsSessions from "../entities/TestsSessions";
 import axios from "axios";
+import { Helmet } from 'react-helmet';
 
 class ShowTestsQuestions extends Component {
     constructor(props) {
@@ -163,6 +164,10 @@ class ShowTestsQuestions extends Component {
         console.log("current q: "+this.state.currentQuestion+" currentQuestionOptions.size "+this.state.currentQuestionOptions.length+" isAreYouSureOpen "+this.state.isAreYouSureOpen);
         return (
             <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" sx={ { backgroundColor: "lightyellow", backgroundImage: `url(${bg})`,backgroundSize: "cover",color: "#ffffff" }}>
+                <Helmet>
+                    <title>Iq test</title>
+                    <meta name="description" content="IQ test"/>
+                </Helmet>
                 <Dialog
                     open={this.state.isAreYouSureOpen}
                     onClose={handleCloseAreYouSure}

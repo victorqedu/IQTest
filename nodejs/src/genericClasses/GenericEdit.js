@@ -3,6 +3,7 @@ import {Box, Button, Container, Input, MenuItem, Select, TextField, Typography} 
 import axios from "axios";
 import {Form, FormGroup} from "reactstrap";
 import commonData from "../genericClasses/commonData";
+import { Helmet } from 'react-helmet';
 
 class GenericEdit extends Component {
     constructor(props) {
@@ -285,6 +286,10 @@ class GenericEdit extends Component {
     render() {
         console.log("Start render GE "+JSON.stringify(this.state.editData));
         return (<Container>
+            <Helmet>
+                <title>Iq test</title>
+                <meta name="description" content="IQ test"/>
+            </Helmet>
             <br/>
             {this.props.id ? 'Edit ' : 'Add'}
             <Form onSubmit={this.handleSubmit}>

@@ -5,6 +5,7 @@ import commonData from "./genericClasses/commonData";
 import Questions from "./entities/Questions";
 import ShowTestsQuestions from "./hardCodedClasses/ShowTestQuestions";
 import bg from './images/bg.jpg';
+import { Helmet } from 'react-helmet';
 
 class Home extends Component {
     constructor(props) {
@@ -33,6 +34,10 @@ class Home extends Component {
         if(this.state.testId===undefined) {
             return (
                 <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" sx={ { backgroundColor: "lightyellow", backgroundImage: `url(${bg})`,backgroundSize: "cover",color: "#ffffff" }}>
+                    <Helmet>
+                        <title>Iq test</title>
+                        <meta name="description" content="IQ test"/>
+                    </Helmet>
                     <Form onSubmit={this.handleSubmit}>
                         <Input type="hidden" name="test_id" id="test_id" value="9"/>
                         <Button variant="outlined" type="submit">Test your IQ</Button>

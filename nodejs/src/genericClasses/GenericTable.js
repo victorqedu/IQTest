@@ -16,6 +16,7 @@ import {ReactComponent as EditSVG} from '../images/edit.svg';
 import GenericEdit from "./GenericEdit";
 import QuestionsOptions from "../entities/QuestionsOptions";
 import Questions from "../entities/Questions";
+import { Helmet } from 'react-helmet';
 
 class GenericTable extends Component {
     constructor(props) {
@@ -381,6 +382,10 @@ class GenericTable extends Component {
         let count = this.state.page*this.state.rowsPerPage+1;
         return (
             <ThemeProvider theme={commonData.theme}>
+                <Helmet>
+                    <title>Iq test</title>
+                    <meta name="description" content="IQ test"/>
+                </Helmet>
                 <Box>
                     {/*the popup dialog for adding/modifying a record*/}
                     <Dialog
