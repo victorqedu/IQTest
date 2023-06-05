@@ -1,0 +1,33 @@
+version: '3.1'
+services:
+  db:
+    image: iqtest_postgres:1.0
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: server
+      POSTGRES_DB: iqtest
+    volumes:
+       - ./data:/var/lib/postgresql/data
+    ports:
+       - '5432:5432'
+    healthcheck:
+       test: pg_isready -U postgres -d iqtest
+       interval: 10s
+       timeout: 3s
+       retries: 3
+  spring:
+    image: iqtest_spring:1.0
+    restart: always
+    ports:
+       - '8443:8443'
+       - '8080:8080'
+    volumes:
+       - ./m2:/root/.m2
+    depends_on:
+       - db
+  node:
+    image: iqtest_nodejs:1.0
+    restart: always
+    ports:
+       - '443:443'
