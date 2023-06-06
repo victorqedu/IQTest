@@ -33,20 +33,31 @@ class Home extends Component {
     render() {
         if(this.state.testId===undefined) {
             return (
-                <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" sx={ { backgroundColor: "lightyellow", backgroundImage: `url(${bg})`,backgroundSize: "cover",color: "#ffffff" }}>
+                <>
                     <Helmet>
                         <title>Iq test</title>
                         <meta name="description" content="IQ test"/>
                         <meta name="google-site-verification" content="ovqCMnQY9qDGgKVOXY4IsnN_WE9L3QYV7Okn-7H1Bv0" />
                     </Helmet>
-                    <Form onSubmit={this.handleSubmit}>
-                        <Input type="hidden" name="test_id" id="test_id" value="9"/>
-                        <Button variant="outlined" type="submit">Test your IQ</Button>
-                    </Form>
-                </Box>
+                    <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" sx={ { backgroundColor: "lightyellow", backgroundImage: `url(${bg})`,backgroundSize: "cover",color: "#ffffff" }}>
+                        <Form onSubmit={this.handleSubmit}>
+                            <Input type="hidden" name="test_id" id="test_id" value="9"/>
+                            <Button variant="outlined" type="submit">Test your IQ</Button>
+                        </Form>
+                    </Box>
+                </>
             );
         } else {
-            return(<ShowTestsQuestions questions={this.state.questions} testId={this.state.testId}/>);
+            return(
+                <>
+                    <Helmet>
+                        <title>Iq test</title>
+                        <meta name="description" content="IQ test"/>
+                        <meta name="google-site-verification" content="ovqCMnQY9qDGgKVOXY4IsnN_WE9L3QYV7Okn-7H1Bv0" />
+                    </Helmet>
+                    <ShowTestsQuestions questions={this.state.questions} testId={this.state.testId}/>
+                </>
+            );
         }
     }
 }

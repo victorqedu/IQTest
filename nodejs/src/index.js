@@ -8,12 +8,15 @@ import { Helmet } from 'react-helmet';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
 /*  <React.StrictMode>*/
-    <App>
+    <>
         <Helmet>
             <title>Iq test</title>
             <meta name="description" content="IQ test"/>
+            <meta name="google-site-verification" content="ovqCMnQY9qDGgKVOXY4IsnN_WE9L3QYV7Okn-7H1Bv0" />
         </Helmet>
-    </App>
+        <App>
+        </App>
+    </>
   /*</React.StrictMode>*/
 );
 

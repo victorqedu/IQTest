@@ -380,12 +380,13 @@ class GenericTable extends Component {
         };
 
         let count = this.state.page*this.state.rowsPerPage+1;
-        return (
+        return (<>
+            <Helmet>
+                <title>Iq test</title>
+                <meta name="description" content="IQ test"/>
+                <meta name="google-site-verification" content="ovqCMnQY9qDGgKVOXY4IsnN_WE9L3QYV7Okn-7H1Bv0" />
+            </Helmet>
             <ThemeProvider theme={commonData.theme}>
-                <Helmet>
-                    <title>Iq test</title>
-                    <meta name="description" content="IQ test"/>
-                </Helmet>
                 <Box>
                     {/*the popup dialog for adding/modifying a record*/}
                     <Dialog
@@ -604,6 +605,7 @@ class GenericTable extends Component {
                     </Paper>
                 </Box>
             </ThemeProvider>
+            </>
         );
     }
 }

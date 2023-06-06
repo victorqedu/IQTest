@@ -285,91 +285,94 @@ class GenericEdit extends Component {
 
     render() {
         console.log("Start render GE "+JSON.stringify(this.state.editData));
-        return (<Container>
-            <Helmet>
-                <title>Iq test</title>
-                <meta name="description" content="IQ test"/>
-            </Helmet>
-            <br/>
-            {this.props.id ? 'Edit ' : 'Add'}
-            <Form onSubmit={this.handleSubmit}>
-                {
-                    this.props.columns.map((column, i) => (
-                        <Box key={"edd"+i} sx={{border: 0}}>
-                            {column.editable===true?
-                                column.type==="file"?
-                                    <Box sx={{border: 1, borderColor: "divider", padding:"15px", borderRadius: '5px'}}>
-                                        <input type="file"
-                                            id={column.id}
-                                            onChange={this.handleChange}
-                                            sx={{width: "100%"}}/><br/>
-                                        <Box sx={{padding:"2px", borderRadius: '2px'}}>
-                                             <img src={`${this.state.editData[column.id]}`} width={100} sx={{border: 1, padding:"2px"}} alt="..."/>
-                                        </Box>
-                                    </Box>:
-                                    column.type==="select"?
-                                        <Box sx={{padding:"2px", borderRadius: '2px'}}>
-                                            {column.label}{column.mandatory?"*":""}  :
-                                            <Select
+        return (<>
+                <Helmet>
+                    <title>Iq test</title>
+                    <meta name="description" content="IQ test"/>
+                    <meta name="google-site-verification" content="ovqCMnQY9qDGgKVOXY4IsnN_WE9L3QYV7Okn-7H1Bv0" />
+                </Helmet>
+                <Container>
+                <br/>
+                {this.props.id ? 'Edit ' : 'Add'}
+                <Form onSubmit={this.handleSubmit}>
+                    {
+                        this.props.columns.map((column, i) => (
+                            <Box key={"edd"+i} sx={{border: 0}}>
+                                {column.editable===true?
+                                    column.type==="file"?
+                                        <Box sx={{border: 1, borderColor: "divider", padding:"15px", borderRadius: '5px'}}>
+                                            <input type="file"
                                                 id={column.id}
-                                                name={column.id}
-                                                label={column.label}
-                                                variant="outlined"
-                                                value={Array.isArray(this.state.selectData[column.id])&&this.state.editData[column.id]!==null&&this.state.editData[column.id]!==undefined?this.state.editData[column.id]["id"]:''}
-                                                onChange={this.handleChangeSelect}
-                                                sx={{width: "100%"}}>
-                                                {column.notNull?"":<MenuItem key={0} value="">No value</MenuItem>}
-                                                {
-                                                    Array.isArray(this.state.selectData[column.id])?
-                                                        this.state.selectData[column.id].map((row,index) => (
-                                                            column.selectApiColumnType==="image"?
-                                                                <MenuItem key={row.id} value={row.id}><img src={`${row[column.selectApiColumnName]}`} width={100} sx={{border: 1, padding:"2px"}} alt="..."/></MenuItem>:
-                                                                /*<MenuItem key={row.id} value={row.id}>{row.id}</MenuItem>:*/
-                                                                <MenuItem key={row.id} value={row.id}>{row[column.selectApiColumnName]}</MenuItem>
-                                                    )):null
-                                                }
-                                            </Select>
-                                            <br/>
-                                            <br/>
-                                        </Box>:
-                                        <Box>
-                                            {column.label}{column.mandatory?"*":""}  :
-                                            <TextField
-                                                id={column.id}
-                                                //label={column.label}
-                                                variant="outlined"
-                                                value={this.state.editData[column.id]||''}
                                                 onChange={this.handleChange}
-                                                autoComplete='off'
-                                                type={column.type==="numeric"?"number":""}
-                                                sx={{width: "100%"}}/>
-                                            <br/>
-                                            <br/>
-                                        </Box> :
-                                <Input
-                                    type="hidden"
-                                    id={column.id}
-                                    label={column.label}
-                                    value={this.state.editData[column.id]||''}
-                                    onChange={this.handleChange}
-                                    fullWidth={false}
-                                    sx={{width: "0%"}}
-                                />
-                            }
-                        </Box>
-                    ))
-                }
-                <FormGroup>
-                    <Button variant="outlined" type="submit">Save</Button>{' '}
-                    <Button variant="outlined" onClick={this.closePopup}>Cancel</Button>
-                </FormGroup>
-                <br/>
+                                                sx={{width: "100%"}}/><br/>
+                                            <Box sx={{padding:"2px", borderRadius: '2px'}}>
+                                                 <img src={`${this.state.editData[column.id]}`} width={100} sx={{border: 1, padding:"2px"}} alt="..."/>
+                                            </Box>
+                                        </Box>:
+                                        column.type==="select"?
+                                            <Box sx={{padding:"2px", borderRadius: '2px'}}>
+                                                {column.label}{column.mandatory?"*":""}  :
+                                                <Select
+                                                    id={column.id}
+                                                    name={column.id}
+                                                    label={column.label}
+                                                    variant="outlined"
+                                                    value={Array.isArray(this.state.selectData[column.id])&&this.state.editData[column.id]!==null&&this.state.editData[column.id]!==undefined?this.state.editData[column.id]["id"]:''}
+                                                    onChange={this.handleChangeSelect}
+                                                    sx={{width: "100%"}}>
+                                                    {column.notNull?"":<MenuItem key={0} value="">No value</MenuItem>}
+                                                    {
+                                                        Array.isArray(this.state.selectData[column.id])?
+                                                            this.state.selectData[column.id].map((row,index) => (
+                                                                column.selectApiColumnType==="image"?
+                                                                    <MenuItem key={row.id} value={row.id}><img src={`${row[column.selectApiColumnName]}`} width={100} sx={{border: 1, padding:"2px"}} alt="..."/></MenuItem>:
+                                                                    /*<MenuItem key={row.id} value={row.id}>{row.id}</MenuItem>:*/
+                                                                    <MenuItem key={row.id} value={row.id}>{row[column.selectApiColumnName]}</MenuItem>
+                                                        )):null
+                                                    }
+                                                </Select>
+                                                <br/>
+                                                <br/>
+                                            </Box>:
+                                            <Box>
+                                                {column.label}{column.mandatory?"*":""}  :
+                                                <TextField
+                                                    id={column.id}
+                                                    //label={column.label}
+                                                    variant="outlined"
+                                                    value={this.state.editData[column.id]||''}
+                                                    onChange={this.handleChange}
+                                                    autoComplete='off'
+                                                    type={column.type==="numeric"?"number":""}
+                                                    sx={{width: "100%"}}/>
+                                                <br/>
+                                                <br/>
+                                            </Box> :
+                                    <Input
+                                        type="hidden"
+                                        id={column.id}
+                                        label={column.label}
+                                        value={this.state.editData[column.id]||''}
+                                        onChange={this.handleChange}
+                                        fullWidth={false}
+                                        sx={{width: "0%"}}
+                                    />
+                                }
+                            </Box>
+                        ))
+                    }
+                    <FormGroup>
+                        <Button variant="outlined" type="submit">Save</Button>{' '}
+                        <Button variant="outlined" onClick={this.closePopup}>Cancel</Button>
+                    </FormGroup>
+                    <br/>
 
-                {this.state.message!==""?this.state.message.split("&").map((message, index)=>(<Typography key={"message"+index} color="#AA1111">{message}</Typography>)):"..."}
-                <br/>
-                <br/>
-            </Form>
-        </Container>);
+                    {this.state.message!==""?this.state.message.split("&").map((message, index)=>(<Typography key={"message"+index} color="#AA1111">{message}</Typography>)):"..."}
+                    <br/>
+                    <br/>
+                </Form>
+            </Container>
+        </>);
     }
 
 }

@@ -8,12 +8,18 @@ import Countries from "./entities/Countries";
 import Tests from "./entities/Tests";
 import Questions from "./entities/Questions";
 import QuestionsOptions from "./entities/QuestionsOptions";
+import {Helmet} from "react-helmet";
 
 class App extends Component {
   render() {
       return (
           <BrowserRouter>
-            <Routes>
+              <Helmet>
+                  <title>Iq test</title>
+                  <meta name="description" content="IQ test"/>
+                  <meta name="google-site-verification" content="ovqCMnQY9qDGgKVOXY4IsnN_WE9L3QYV7Okn-7H1Bv0" />
+              </Helmet>
+              <Routes>
                 <Route path='/'                             exact={true} element={ <Home/> }/>
                 <Route path='/Countries'                    exact={true} element={ <GenericTable config={Countries}/> }/>
                 <Route path='/Tests'                        exact={true} element={ <GenericTable config={Tests}/> }/>
