@@ -14,14 +14,14 @@ class App extends Component {
       return (
           <BrowserRouter>
             <Routes>
-                <Route path='/'                 exact={true} element={ <Home/> }/>
-                <Route path='/Countries'        exact={true} element={ <GenericTable config={Countries}/> }/>
-                <Route path='/Tests'            exact={true} element={ <GenericTable config={Tests}/> }/>
-                <Route path='/Questions'        exact={true} element={ <GenericTable config={Questions}/> }/>
-                <Route path='/QuestionsOptions' exact={true} element={ <GenericTable config={QuestionsOptions}/> }/>
-                <Route path="/Home"             exact={true} element={ <Home/> }/>
-                <Route path="/NotFound"         exact={true} element={ <NotFound/> }/>
-                <Route path="*"                 exact={true} element={ <NotFound/> }/>
+                <Route path='/'                             exact={true} element={ <Home/> }/>
+                <Route path='/Countries'                    exact={true} element={ <GenericTable config={Countries}/> }/>
+                <Route path='/Tests'                        exact={true} element={ <GenericTable config={Tests}/> }/>
+                <Route path='/Questions'                    exact={true} element={ <GenericTable config={Questions}/> }/>
+                <Route path='/QuestionsOptions'             exact={true} element={ <GenericTable config={QuestionsOptions}/> }/>
+                <Route path="/googlea17d3531eae5c8c9.html"  exact render={() => {window.location.href="/googlea17d3531eae5c8c9.html"}} />
+                <Route path="/NotFound"                     exact={true} element={ <NotFound/> }/>
+                <Route path="*"                             exact={true} element={ <NotFound/> }/>
             </Routes>
           </BrowserRouter>
       );
