@@ -37,6 +37,7 @@ class Home extends Component {
                     <Helmet>
                         <title>Iq test</title>
                         <meta name="description" content="IQ test"/>
+                        <meta name="google-site-verification" content="ovqCMnQY9qDGgKVOXY4IsnN_WE9L3QYV7Okn-7H1Bv0" />
                     </Helmet>
                     <Form onSubmit={this.handleSubmit}>
                         <Input type="hidden" name="test_id" id="test_id" value="9"/>
