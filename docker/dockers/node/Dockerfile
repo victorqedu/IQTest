@@ -13,4 +13,4 @@ RUN npm install
 RUN npm install -g serve
 RUN npm run build
 CMD ["npm", "install", "-g", "serve"]
-CMD ["serve", "-s", "build", "-l", "443", "--ssl-cert", "../certs/romarg/caido_ro.crt", "--ssl-key", "../certs/romarg/caido.ro.nopass.key"]
+CMD ["serve", "-s", "build", "-l", "443", "--ssl-cert", "../certs/romarg/iqtest_caido_ro.crt", "--ssl-key", "../certs/romarg/iqtest.caido.ro.nopass.key"]
