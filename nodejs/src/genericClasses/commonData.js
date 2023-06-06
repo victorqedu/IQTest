@@ -8,7 +8,7 @@ class commonData extends Component {
     static password = 'test';
     static basicAuth = 'Basic ' + btoa(this.username + ':' + this.password);
     static API_PROTOCOL = "https";
-    static API_HOST = "www.caido.ro";
+    static API_HOST = "www.iqtest.caido.ro";
     static API_PORT = "8443";
     static API_PATH = "api/"
 
