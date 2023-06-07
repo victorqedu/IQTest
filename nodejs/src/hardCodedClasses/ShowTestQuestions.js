@@ -18,6 +18,7 @@ import GenericEdit from "../genericClasses/GenericEdit";
 import TestsSessions from "../entities/TestsSessions";
 import axios from "axios";
 import { Helmet } from 'react-helmet';
+import ResponsiveData from "../genericClasses/ResponsiveData";
 
 class ShowTestsQuestions extends Component {
     constructor(props) {
@@ -38,6 +39,8 @@ class ShowTestsQuestions extends Component {
             isAreYouSureOpen: false,
             isPopupEditorOpened: false,
             result: undefined,
+            is800w: true,
+            isPortrait: false,
         };
     }
 
@@ -142,6 +145,16 @@ class ShowTestsQuestions extends Component {
     }
 
     render() {
+        const updateResponsiveData = (is800w, isPortrait) => {
+            if(this.state.is800w!==is800w || this.state.isPortrait!==isPortrait) {
+                console.log("is800w "+is800w+" isPortrait "+isPortrait);
+                let item = {...this.state};
+                item.is800w = is800w;
+                item.isPortrait = isPortrait;
+                this.setState(item);
+            }
+        }
+
         const handleCloseAreYouSure = () => {
             this.setState({isAreYouSureOpen: false});
         };
@@ -169,6 +182,7 @@ class ShowTestsQuestions extends Component {
                     <meta name="description" content="IQ test"/>
                     <meta name="google-site-verification" content="ovqCMnQY9qDGgKVOXY4IsnN_WE9L3QYV7Okn-7H1Bv0" />
                 </Helmet>
+
                 <Dialog
                     open={this.state.isAreYouSureOpen}
                     onClose={handleCloseAreYouSure}
@@ -202,45 +216,79 @@ class ShowTestsQuestions extends Component {
                         />
                     </div>
                 </Dialog>
+                <ResponsiveData updateResponsiveData={updateResponsiveData}/>
                 {
                     this.state.result===undefined?
                         <Paper sx={{ width: '750px', mb: 2, padding: 1}}>
                             <br/>
-                            <br/>
-                            <br/>
                             {
-                                Array.isArray(this.state.currentQuestionOptions) &&
-                                <TableContainer component={Paper} >
-                                    <Table border={0} >
-                                        <TableBody>
-                                            <TableRow>
-                                                <TableCell sx={{padding: 0}} align="center">
-                                                    <b>{this.state.questions[this.state.currentQuestion]["description"]}</b>
-                                                    <br/>
-                                                    <img src={`${this.state.questions[this.state.currentQuestion]["image"]}`} width={300} sx={{border: 1, padding:"2px"}} alt="..."/>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <TableContainer component={Paper}>
-                                                        <Table sx={{width:300}} border={0}>
-                                                            <TableBody>
-                                                                <TableRow>
-                                                                    {this.answerCell(0)}
-                                                                    {this.answerCell(1)}
-                                                                    {this.answerCell(2)}
-                                                                </TableRow>
-                                                                <TableRow>
-                                                                    {this.answerCell(3)}
-                                                                    {this.answerCell(4)}
-                                                                    {this.answerCell(5)}
-                                                                </TableRow>
-                                                            </TableBody>
-                                                        </Table>
-                                                    </TableContainer>
-                                                </TableCell>
-                                            </TableRow>
-                                        </TableBody>
-                                    </Table>
-                                </TableContainer>
+                                this.state.isPortrait?
+                                    Array.isArray(this.state.currentQuestionOptions) &&
+                                    <TableContainer component={Paper} >
+                                        <Table border={0} >
+                                            <TableBody>
+                                                <TableRow>
+                                                    <TableCell sx={{padding: 0}} align="center">
+                                                        <b>{this.state.questions[this.state.currentQuestion]["description"]}<br/></b>
+                                                        <br/>
+                                                        <img src={`${this.state.questions[this.state.currentQuestion]["image"]}`} width={300} sx={{border: 1, padding:"2px"}} alt="..."/>
+                                                    </TableCell>
+                                                </TableRow>
+                                                <TableRow>
+                                                    <TableCell sx={{padding: 0}} align="center">
+                                                        <TableContainer component={Paper}>
+                                                            <Table border={0}>
+                                                                <TableBody>
+                                                                    <TableRow>
+                                                                        {this.answerCell(0)}
+                                                                        {this.answerCell(1)}
+                                                                        {this.answerCell(2)}
+                                                                    </TableRow>
+                                                                    <TableRow>
+                                                                        {this.answerCell(3)}
+                                                                        {this.answerCell(4)}
+                                                                        {this.answerCell(5)}
+                                                                    </TableRow>
+                                                                </TableBody>
+                                                            </Table>
+                                                        </TableContainer>
+                                                    </TableCell>
+                                                </TableRow>
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>:
+                                    Array.isArray(this.state.currentQuestionOptions) &&
+                                    <TableContainer component={Paper} >
+                                        <Table border={0} >
+                                            <TableBody>
+                                                <TableRow>
+                                                    <TableCell sx={{padding: 0}} align="center">
+                                                        <b>{this.state.questions[this.state.currentQuestion]["description"]}<br/></b>
+                                                        <br/>
+                                                        <img src={`${this.state.questions[this.state.currentQuestion]["image"]}`} width={300} sx={{border: 1, padding:"2px"}} alt="..."/>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <TableContainer component={Paper}>
+                                                            <Table sx={{width:300}} border={0}>
+                                                                <TableBody>
+                                                                    <TableRow>
+                                                                        {this.answerCell(0)}
+                                                                        {this.answerCell(1)}
+                                                                        {this.answerCell(2)}
+                                                                    </TableRow>
+                                                                    <TableRow>
+                                                                        {this.answerCell(3)}
+                                                                        {this.answerCell(4)}
+                                                                        {this.answerCell(5)}
+                                                                    </TableRow>
+                                                                </TableBody>
+                                                            </Table>
+                                                        </TableContainer>
+                                                    </TableCell>
+                                                </TableRow>
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
                             }
                             <br/>
                             <Box align="center">
