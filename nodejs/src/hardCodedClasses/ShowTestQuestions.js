@@ -41,6 +41,7 @@ class ShowTestsQuestions extends Component {
             result: undefined,
             is800w: true,
             isPortrait: false,
+            isTabletOrMobile: false,
         };
     }
 
@@ -106,12 +107,12 @@ class ShowTestsQuestions extends Component {
         this.setState(item);
     }
 
-    answerCell(answerNumber) {
+    answerCell(answerNumber, dimFactor) {
         return <TableCell sx={{padding: 0}} align="center">
             <Box sx={{ border: 2, padding:0, borderColor: this.state.currentQuestionOptions[answerNumber]["id"]===this.state.questionsAnswers[this.state.currentQuestion]?"#DDAAAA":"white" }}>
                 {answerNumber+1}
                 <Button id={answerNumber} key={"page"+answerNumber} variant="" onClick={this.handleAnswer}>
-                    <img src={`${this.state.currentQuestionOptions[answerNumber]["image"]}`} width={100} sx={{border: 1, padding:"2px"}} alt="..."/>
+                    <img src={`${this.state.currentQuestionOptions[answerNumber]["image"]}`} width={100*dimFactor} sx={{border: 1, padding:"2px"}} alt="..."/>
                 </Button>
             </Box>
         </TableCell>
@@ -145,12 +146,13 @@ class ShowTestsQuestions extends Component {
     }
 
     render() {
-        const updateResponsiveData = (is800w, isPortrait) => {
-            if(this.state.is800w!==is800w || this.state.isPortrait!==isPortrait) {
+        const updateResponsiveData = (is800w, isPortrait, isTabletOrMobile) => {
+            if(this.state.is800w!==is800w || this.state.isPortrait!==isPortrait || this.state.isTabletOrMobile!==isTabletOrMobile) {
                 console.log("is800w "+is800w+" isPortrait "+isPortrait);
                 let item = {...this.state};
                 item.is800w = is800w;
                 item.isPortrait = isPortrait;
+                item.isTabletOrMobile = isTabletOrMobile;
                 this.setState(item);
             }
         }
@@ -174,6 +176,12 @@ class ShowTestsQuestions extends Component {
             }
         };
 
+        let dimFactor = 1;
+        if(!this.state.is800w) {
+            dimFactor=0.7;
+        } else if(this.state.isTabletOrMobile) {
+            dimFactor=0.7;
+        }
         console.log("current q: "+this.state.currentQuestion+" currentQuestionOptions.size "+this.state.currentQuestionOptions.length+" isAreYouSureOpen "+this.state.isAreYouSureOpen);
         return (
             <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" sx={ { backgroundColor: "lightyellow", backgroundImage: `url(${bg})`,backgroundSize: "cover",color: "#ffffff" }}>
@@ -231,7 +239,7 @@ class ShowTestsQuestions extends Component {
                                                     <TableCell sx={{padding: 0}} align="center">
                                                         <b>{this.state.questions[this.state.currentQuestion]["description"]}<br/></b>
                                                         <br/>
-                                                        <img src={`${this.state.questions[this.state.currentQuestion]["image"]}`} width={300} sx={{border: 1, padding:"2px"}} alt="..."/>
+                                                        <img src={`${this.state.questions[this.state.currentQuestion]["image"]}`} width={300*dimFactor} sx={{border: 1, padding:"2px"}} alt="..."/>
                                                     </TableCell>
                                                 </TableRow>
                                                 <TableRow>
@@ -240,14 +248,14 @@ class ShowTestsQuestions extends Component {
                                                             <Table border={0}>
                                                                 <TableBody>
                                                                     <TableRow>
-                                                                        {this.answerCell(0)}
-                                                                        {this.answerCell(1)}
-                                                                        {this.answerCell(2)}
+                                                                        {this.answerCell(0, dimFactor)}
+                                                                        {this.answerCell(1, dimFactor)}
+                                                                        {this.answerCell(2, dimFactor)}
                                                                     </TableRow>
                                                                     <TableRow>
-                                                                        {this.answerCell(3)}
-                                                                        {this.answerCell(4)}
-                                                                        {this.answerCell(5)}
+                                                                        {this.answerCell(3, dimFactor)}
+                                                                        {this.answerCell(4, dimFactor)}
+                                                                        {this.answerCell(5, dimFactor)}
                                                                     </TableRow>
                                                                 </TableBody>
                                                             </Table>
@@ -265,21 +273,21 @@ class ShowTestsQuestions extends Component {
                                                     <TableCell sx={{padding: 0}} align="center">
                                                         <b>{this.state.questions[this.state.currentQuestion]["description"]}<br/></b>
                                                         <br/>
-                                                        <img src={`${this.state.questions[this.state.currentQuestion]["image"]}`} width={300} sx={{border: 1, padding:"2px"}} alt="..."/>
+                                                        <img src={`${this.state.questions[this.state.currentQuestion]["image"]}`} width={300*dimFactor} sx={{border: 1, padding:"2px"}} alt="..."/>
                                                     </TableCell>
                                                     <TableCell>
                                                         <TableContainer component={Paper}>
                                                             <Table sx={{width:300}} border={0}>
                                                                 <TableBody>
                                                                     <TableRow>
-                                                                        {this.answerCell(0)}
-                                                                        {this.answerCell(1)}
-                                                                        {this.answerCell(2)}
+                                                                        {this.answerCell(0, dimFactor)}
+                                                                        {this.answerCell(1, dimFactor)}
+                                                                        {this.answerCell(2, dimFactor)}
                                                                     </TableRow>
                                                                     <TableRow>
-                                                                        {this.answerCell(3)}
-                                                                        {this.answerCell(4)}
-                                                                        {this.answerCell(5)}
+                                                                        {this.answerCell(3, dimFactor)}
+                                                                        {this.answerCell(4, dimFactor)}
+                                                                        {this.answerCell(5, dimFactor)}
                                                                     </TableRow>
                                                                 </TableBody>
                                                             </Table>
