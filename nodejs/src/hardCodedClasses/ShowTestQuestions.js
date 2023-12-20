@@ -8,48 +8,152 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableContainer,
-    TableRow
+    TableContainer, TableHead,
+    TableRow, TextField
 } from "@mui/material";
 import commonData from "../genericClasses/commonData";
 import QuestionsOptions from "../entities/QuestionsOptions";
-import bg from "../images/bg.jpg";
+import bg from "../images/bg3.jpg";
 import GenericEdit from "../genericClasses/GenericEdit";
 import TestsSessions from "../entities/TestsSessions";
 import axios from "axios";
 import { Helmet } from 'react-helmet';
 import ResponsiveData from "../genericClasses/ResponsiveData";
+import Timer from "../genericClasses/Timer";
+import '../App.css';
 
 class ShowTestsQuestions extends Component {
     constructor(props) {
         super(props);
-        this.handleSubmit = this.handleSubmit.bind(this);
+        this.startSubmitProcess = this.startSubmitProcess.bind(this);
         this.handleCheckSubmit = this.handleCheckSubmit.bind(this);
         this.handleQuestionChange = this.handleQuestionChange.bind(this);
         this.handleAnswer = this.handleAnswer.bind(this);
         this.answerCell = this.answerCell.bind(this);
         this.openAreYouSureDialog = this.openAreYouSureDialog.bind(this);
-        this.getData = this.getData.bind(this);
+        this.prepareTestDataToSave = this.prepareTestDataToSave.bind(this);
+        this.nextQuestionWhenTimerHasExpired = this.nextQuestionWhenTimerHasExpired.bind(this);
+        this.shuffleArray = this.shuffleArray.bind(this);
+        this.answerSection = this.answerSection.bind(this);
+        this.handleResponseChange = this.handleResponseChange.bind(this);
+        this.checkIfTheCurrentQuestionHasBeenAnsweredCorrectly = this.checkIfTheCurrentQuestionHasBeenAnsweredCorrectly.bind(this);
+        this.saveCurrentQuestionData = this.saveCurrentQuestionData.bind(this);
+        this.genericNextQuestion = this.genericNextQuestion.bind(this);
+        this.showErrorAndMoveToNextQuestion = this.showErrorAndMoveToNextQuestion.bind(this);
 
         this.state = {
             questions: this.props.questions,
-            questionsAnswers: [],
-            currentQuestionOptions: {},
+            questionsOptions: [], // list of all the QuestionOptions for all the questions that have been displayed
+            questionsAnswers: [], // saves objects of the type QuestionOptions for every question answered by the user, here are saved only the QuestionOptions that have been selected as a correct answer by the user
+            questionsTextAnswers: [], // saves the text value as a response to every question that is not a question with options to answer but a text to input
+            questionsCorrect: [], // saves if the question has been answered correctly
+            correct: undefined, // if the current question has been answered correctly
+            currentQuestionOptions: {}, // the list of QuestionOptions for the current question
             currentQuestion: 0,
-            isAreYouSureOpen: false,
+            isAreYouSureOpen: false, // the variable that will display the dialog that will ask the user if is sure that he wants to submit the results to the API as long as not all the questions are answered
             isPopupEditorOpened: false,
-            result: undefined,
+            result: undefined, // this is the final result like "Your IQ is..." or "The final result is..."
             is800w: true,
             isPortrait: false,
             isTabletOrMobile: false,
+            hasTimers: false,
+            testId: this.props.testId,
+            test: undefined,
+            theResponse: "", // this is the respone in text format, when the user inputs the data in a TextField
+            buttonStyleBase: {
+                borderTopLeftRadius: "15px",
+                borderTopRightRadius: "15px",
+                borderBottomLeftRadius: "15px",
+                borderBottomRightRadius: "15px",
+                border: "0px solid #0d0610",
+                backgroundColor: "#FFFFFF",
+                color: "#000000",
+                margin: '1px',
+                '&:hover': {
+                    backgroundColor: '#dacdbd', // Change this to the desired hover color
+                    border: "0px solid #0d0610",
+                },
+            },
+            buttonStyleAnswered: {
+                borderTopLeftRadius: "15px",
+                borderTopRightRadius: "15px",
+                borderBottomLeftRadius: "15px",
+                borderBottomRightRadius: "15px",
+                border: "0px solid #0d0610",
+                backgroundColor: "#e8cf00",
+                color: "#000000",
+                margin: '1px',
+                '&:hover': {
+                    backgroundColor: '#e8cf00', // Change this to the desired hover color
+                    border: "0px solid #0d0610",
+                },
+            },
+            buttonStyleCurrent: {
+                borderTopLeftRadius: "15px",
+                borderTopRightRadius: "15px",
+                borderBottomLeftRadius: "15px",
+                borderBottomRightRadius: "15px",
+                border: "2px solid #e9ccb8",
+                backgroundColor: "#e9ccb8",
+                color: "#000000",
+                margin: '2px',
+                '&:hover': {
+                    backgroundColor: '#e9ccb8', // Change this to the desired hover color
+                    border: "2px solid #e9ccb8",
+                },
+            },
+            buttonStyleWrong: {
+                borderTopLeftRadius: "15px",
+                borderTopRightRadius: "15px",
+                borderBottomLeftRadius: "15px",
+                borderBottomRightRadius: "15px",
+                border: "2px solid #e9ccb8",
+                backgroundColor: "#faa0a0",
+                color: "#000000",
+                margin: '2px',
+                '&:hover': {
+                    backgroundColor: '#faa0a0', // Change this to the desired hover color
+                    border: "2px solid #e9ccb8",
+                },
+            },
         };
+        this.state.questions.map((q,i)=>{
+            if(q["maxTime"]!==null) {
+                console.log("Found maxtime not null");
+                this.state.hasTimers = true;
+            }
+            return "";
+        });
+        axios.get(commonData.getApiLink()+"tests/"+this.state.testId, commonData.config)
+            .then(res => {
+                let item = {...this.state};
+                item.test = res.data;
+                this.setState(item);
+            }).catch(error => {
+                console.log("Error is"+error);
+            });
     }
 
-    async handleSubmit(event) {
+    /**
+     * This function starts the submit process but actually the only thing it's doing is to open the popup editor that will collect the data about the person that completed the test.
+     * So it  will collect data as name, age and sex
+     * @param event
+     * @returns {Promise<void>}
+     */
+    async startSubmitProcess(event) {
         console.log("Start handleSubmit");
-        this.setState({isPopupEditorOpened: true, isAreYouSureOpen:false});
+        let item = {...this.state};
+        item.isPopupEditorOpened = true;
+        item.isAreYouSureOpen = false;
+        this.setState(item);
     }
 
+    /**
+     * The function executes only when the user manually clicks on the Submit answers button
+     * The function check if all questions have answers and if the proceeds to handleSubmit
+     * @param event
+     * @returns {Promise<void>}
+     */
     async handleCheckSubmit(event) {
         console.log("Start handleCheckSubmit");
         let allQuestionsHaveAnswers = true;
@@ -60,71 +164,297 @@ class ShowTestsQuestions extends Component {
         }
         console.log("handleCheckSubmit allQuestionsHaveAnswers "+allQuestionsHaveAnswers);
         if(!allQuestionsHaveAnswers) {
-            this.setState({isAreYouSureOpen: true});
+            let item = {...this.state};
+            item.isAreYouSureOpen = true;
+            if(this.state.test.detailedResults===1) { // if not all questions have answers it means that we could have questions for wich we have not yet downloaded the options list and if detailedResults===1 than we willo neede all the options to print them in the final screen
+                for(let i=0;i<this.state.questions.length;i++) {
+                    let data = await commonData.getDataFromApi(QuestionsOptions.apiName, this.state.questions[i]["id"], QuestionsOptions.apiPath);
+                    let item = {...this.state};
+                    item.questionsOptions[i] = data;
+                    this.setState(item);
+                }
+            }
+            this.setState(item);
         } else {
-            await this.handleSubmit(null);
+            await this.startSubmitProcess(null);
         }
     }
 
+    /**
+     * After render this function executes and retrieves the current question options from the database and proceeds to shuffle them
+     * @returns {Promise<void>}
+     */
     async componentDidMount() {
         console.log("StartcomponentDidMount");
+        let data = await commonData.getDataFromApi(QuestionsOptions.apiName, this.state.questions[0]["id"], QuestionsOptions.apiPath);
+        //console.log("ComponentDidMount "+JSON.stringify(item.currentQuestionOptions));
         let item = {...this.state};
-        item.currentQuestionOptions = await commonData.getDataFromApi(QuestionsOptions.apiName, item.questions[0]["id"], QuestionsOptions.apiPath);
+        item.currentQuestionOptions = data;
+        if(item.currentQuestionOptions!==undefined && item.currentQuestionOptions.length>0) {
+            this.shuffleArray(item.currentQuestionOptions);
+        }
         this.setState(item);
     }
 
+    /**
+     * This function executes only when the user clicks on a question number to skip to a specific question
+     * @param event
+     * @returns {Promise<void>}
+     */
     async handleQuestionChange(event) {
-        let page = event.currentTarget.id;
+        let questionIndex = event.currentTarget.id;
         let item = {...this.state};
-        switch (page) {
+        await this.saveCurrentQuestionData(item, undefined);
+        switch (questionIndex) {
             case "firstPage": {
-                item.currentQuestion = 0;
+                questionIndex = 0;
                 break;
             }
             case "lastPage": {
-                item.currentQuestion = item.questions.length-1;
+                questionIndex = item.questions.length-1;
                 break;
             }
             default: {
-                item.currentQuestion = parseInt(page);
+                questionIndex = parseInt(questionIndex);
                 break;
             }
         }
-        console.log("item.currentQuestion "+item.currentQuestion+" page "+page);
-        item.currentQuestionOptions = await commonData.getDataFromApi(QuestionsOptions.apiName, item.questions[item.currentQuestion]["id"], QuestionsOptions.apiPath);
+        await this.genericNextQuestion(item, questionIndex);
         this.setState(item);
     }
 
-    async handleAnswer(event) {
-        event.preventDefault();
-        let id = event.currentTarget.id;
-        let item = {...this.state};
-        item.questionsAnswers[item.currentQuestion] = item.currentQuestionOptions[id]["id"];
-        if(item.currentQuestion<item.questions.length-1) {
-            item.currentQuestion++;
+    /**
+     * Checks if the current question has been correctly answered
+     * @returns {Promise<void>}
+     */
+    checkIfTheCurrentQuestionHasBeenAnsweredCorrectly(indexAnswer) {
+        console.log("Start checkIfTheCurrentQuestionHasBeenAnsweredCorrectly");
+        if(this.state.test.options===1) { // if options = 1 than the answer can be a single response from the list of answers, the rest are wrong
+            if(indexAnswer!==undefined && this.state.currentQuestionOptions[indexAnswer]["id"]===this.state.questions[this.state.currentQuestion]["idQuestionsOptionsCorrect"]["id"]) {
+                console.log("Correct answer");
+                return true;
+            } else {
+                console.log("Incorrect answer");
+                return false;
+            }
+        } else { // if option != 1 than all the answers from the list of answers are correct and I need to check is the answer matches any (on this else branch I will only have the text answers)
+            const isCorrect = this.state.currentQuestionOptions.some((o) => {
+                console.log("Current option description " + o.description);
+                if (o.description.toLowerCase() === this.state.theResponse.toLowerCase()) {
+                    console.log("Correct text answer");
+                    return true;
+                }
+                console.log("Incorrect text answer");
+                return false;
+            });
+            return isCorrect;
         }
-        item.currentQuestionOptions = await commonData.getDataFromApi(QuestionsOptions.apiName, item.questions[item.currentQuestion]["id"], QuestionsOptions.apiPath);
-        this.setState(item);
     }
 
+    /**
+     * Saves the data of the current question, e.g.:
+     * - the response(text or option)
+     * - the general status(correct or incorrect)
+     * @returns {Promise<void>}
+     */
+    async saveCurrentQuestionData(item, indexAnswer) {
+        console.log("Start saveCurrentQuestionData");
+        item.correct = this.checkIfTheCurrentQuestionHasBeenAnsweredCorrectly(indexAnswer);
+        console.log("saveCurrentQuestionData item.correct "+item.correct);
+        item.questionsCorrect[item.currentQuestion] = item.correct;
+        item.questionsOptions[item.currentQuestion] = item.currentQuestionOptions;
+
+        if(this.state.test.options===1) { // if options = 1 than the answer can be a single response from the list of answers, the rest are wrong
+            if(indexAnswer!==undefined) { // if the timer expires without selecting one answer than I will have no indexAnswer
+                item.questionsAnswers[item.currentQuestion] = item.currentQuestionOptions[indexAnswer];
+            }
+        } else { // if option != 1
+            item.questionsTextAnswers[item.currentQuestion] = item.theResponse;
+        }
+    }
+
+    /**
+     * This function executes in 2 cases:
+     * 1) When a set of options is presented to the user and the user picks one of the options
+     * 2) When the test's answer if of type text and the user clicks on the "Next" question
+     * The function checks if the answer is correct and displays Correct or incorrect on the screen for 1 second and
+     * then proceeds to the next question or submits the answers if we are at the last question
+     * @param event
+     * @returns {Promise<void>}
+     */
+    async handleAnswer(event) {
+        console.log("Start handleAnswer");
+        event.preventDefault();
+        let indexAnswer = event.currentTarget.id; // "indexAnswer" is the answer index(0,1,2,3,4,5...) in the array of possible answers, is not the indexAnswer from the database
+        let item = {...this.state};
+        await this.saveCurrentQuestionData(item, indexAnswer);
+
+        if(item.currentQuestion<item.questions.length-1) { // if I'm not at the last question
+            await this.genericNextQuestion(item);
+        } else { // this is the last question, start the process of submitting the data to the API
+            await this.startSubmitProcess(null);
+        }
+    }
+
+    /**
+     Displays if the current answer is correct/incorrect and goes to the next question
+     * @returns {Promise<void>}
+     */
+    async genericNextQuestion(item, nextQuestionIndex) {
+        console.log("Start genericNextQuestion");
+        let currentQuestion = item.currentQuestion+1
+        if(nextQuestionIndex!==undefined) {
+            currentQuestion = nextQuestionIndex;
+        }
+
+        let currentQuestionOptions = await commonData.getDataFromApi(QuestionsOptions.apiName, item.questions[currentQuestion]["id"], QuestionsOptions.apiPath);
+        await this.showErrorAndMoveToNextQuestion(item, currentQuestion, currentQuestionOptions);
+    }
+
+    async showErrorAndMoveToNextQuestion(item, currentQuestion, currentQuestionOptions) {
+        /**
+         * I set the state and show if the answer is correct/incorrect and in the callback, after 1 second I move to the next question
+         */
+        this.setState(item, () => {
+            let ti = setInterval(() => {
+                item.currentQuestion = currentQuestion;
+                item.theResponse = item.questionsTextAnswers[item.currentQuestion]||"";
+                item.currentQuestionOptions = currentQuestionOptions;
+                item.correct = item.questionsCorrect[item.currentQuestion];
+
+                if(item.currentQuestionOptions!==undefined && item.currentQuestionOptions.length>0) {
+                    this.shuffleArray(item.currentQuestionOptions);
+                }
+                this.setState(item);
+                console.log("this.timerRef "+this.timerRef);
+                if(this.timerRef!==undefined) {
+                    this.timerRef.resetTimer();
+                }
+                clearInterval(ti);
+            }, 1000);
+        });
+    }
+
+    /**
+     * generic function to shuffle any array, I use it to shuffle the questions when no order is required and to shuffle the answers
+     * @param array
+     */
+    shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    /**
+     * Skips to the next question or submits the data
+     * This function is called only when questions where the field maxTime is defined and the timer is available and the timer has expired, e.g. the user hasn't answered int the required time.
+     * @returns {Promise<void>}
+     */
+    async nextQuestionWhenTimerHasExpired() {
+        let item = {...this.state};
+        await this.saveCurrentQuestionData(item, undefined);
+        if(item.currentQuestion<item.questions.length-1) {
+            await this.genericNextQuestion(item);
+        } else {
+            await this.startSubmitProcess(null);
+        }
+    }
+
+    /**
+     * This function displays the answers sections, eg:
+     * - the list of options
+     * - or a text field when the user must mannually insert the answer
+     * @param dimFactor
+     * @returns {JSX.Element}
+     */
+    answerSection(dimFactor) {
+        if(this.state.test.options===1) {
+            return <TableBody>
+                <TableRow>
+                    {this.answerCell(0, dimFactor)}
+                    {this.answerCell(1, dimFactor)}
+                    {this.answerCell(2, dimFactor)}
+                </TableRow>
+                <TableRow>
+                    {this.answerCell(3, dimFactor)}
+                    {this.answerCell(4, dimFactor)}
+                    {this.answerCell(5, dimFactor)}
+                </TableRow>
+            </TableBody>;
+        } else {
+            return <TableBody>
+                <TableRow>
+                    <TableCell sx={{padding: 1, width: '33%'}} align="center">
+                        <TextField
+                            id="theResponse"
+                            variant="outlined"
+                            value={this.state.theResponse}
+                            autoComplete='off'
+                            sx={{width: "90%"}}
+                            onChange={this.handleResponseChange}/>
+                        <Button variant="contained" sx={{width: "90%", height: "80px", margin:"15px", ...this.state.buttonStyleCurrent}} onClick={this.handleAnswer}>Next</Button>
+                    </TableCell>
+                </TableRow>
+            </TableBody>;
+        }
+    }
+
+    /**
+     * The function executes only if the answer is of type text(the user must not select an option from a list but he must insert mannually the answer from the keyboard)
+     * theResponse variable is a special variable used to save the input of the user.
+     * @param event
+     * @returns {Promise<void>}
+     */
+    async handleResponseChange(event) {
+        const target = event.currentTarget;
+        let item = {...this.state};
+        item.theResponse = target.value||"";
+        this.setState(item, () => {
+            let item = {...this.state};
+            item.correct = this.checkIfTheCurrentQuestionHasBeenAnsweredCorrectly(undefined);;
+            this.setState(item);
+        });
+    }
+
+    /**
+     * Creates a button to be clicked by the user for the tests that use a list of options
+     * @param answerNumber
+     * @param dimFactor
+     * @returns {JSX.Element}
+     */
     answerCell(answerNumber, dimFactor) {
-        return <TableCell sx={{padding: 0}} align="center">
-            <Box sx={{ border: 2, padding:0, borderColor: this.state.currentQuestionOptions[answerNumber]["id"]===this.state.questionsAnswers[this.state.currentQuestion]?"#DDAAAA":"white" }}>
-                {answerNumber+1}
-                <Button id={answerNumber} key={"page"+answerNumber} variant="" onClick={this.handleAnswer}>
-                    <img src={`${this.state.currentQuestionOptions[answerNumber]["image"]}`} width={100*dimFactor} sx={{border: 1, padding:"2px"}} alt="..."/>
+        return <TableCell sx={{padding: 0, width: '33%'}} align="center">
+            <Box display="flex" alignItems="center" sx={{ border: 3, padding:0.3, borderColor: this.state.currentQuestionOptions[answerNumber]["id"]===this.state.questionsAnswers[this.state.currentQuestion]?.id?"#FFAAAA":"white" }}>
+                <Button id={answerNumber} key={"page"+answerNumber} variant="" onClick={this.handleAnswer} sx={{ width: '100%', height: '100px', ...this.state.buttonStyleCurrent}}
+                        className="glowing-text-button">
+                    {
+                        this.state.currentQuestionOptions[answerNumber]["image"]===null?
+                            <font size={this.state.currentQuestionOptions[answerNumber]["fontSize"]}>{this.state.currentQuestionOptions[answerNumber]["description"]}</font>:
+                            <img src={`${this.state.currentQuestionOptions[answerNumber]["image"]}`} width={100*dimFactor} sx={{border: 1, padding:"2px"}} alt="..."/>
+                    }
                 </Button>
             </Box>
         </TableCell>
     }
 
+    /**
+     * Openes the dialog that asks the user if the applications should really submit the test results to the API, even if not all the questions have been answered
+     * @param event
+     */
     openAreYouSureDialog(event) {
         let item = {...this.state};
         item.isAreYouSureOpen = true;
         this.setState(item);
     }
 
-    getData() {
+    /**
+     * Creates the JSON necessary to send to the API in order to sate the test session data
+     * This contains all the data about the user that taok the test and about the answers he provided
+     * This data will be sent to the GenericEdit class that will send it to the API
+     * @returns {{}}
+     */
+    prepareTestDataToSave() {
         console.log("getData "+this.props.testId);
 
         let row = {};
@@ -133,19 +463,32 @@ class ShowTestsQuestions extends Component {
         row["idTests"] = objTest;
         row["testsSessionsAnswers"] = [];
         for(let i=0;i<this.state.questions.length;i++) {
-            if(this.state.questionsAnswers[i]!==undefined) {
+            if(this.state.test.options===1 && this.state.questionsAnswers[i]!==undefined) {
                 let tsa = {};
                 tsa["idQuestions"] = {id: this.state.questions[i]["id"]};
-                tsa["idQuestionsOptions"] = {id: this.state.questionsAnswers[i]};
+                row["testsSessionsAnswers"].push(tsa);
+                tsa["idQuestionsOptions"] = {id: this.state.questionsAnswers[i]?.id};
+            } else if(this.state.test.options!==1) {
+                let tsa = {};
+                tsa["idQuestions"] = {id: this.state.questions[i]["id"]};
+                tsa["textResponse"] = this.state.questionsTextAnswers[i];
                 row["testsSessionsAnswers"].push(tsa);
             }
         }
-
         console.log("getData "+JSON.stringify(row));
         return row;
     }
 
+    /**
+     * renders the data to be displayed
+     * @returns {JSX.Element}
+     */
     render() {
+        if(this.state.test===undefined) {
+            return "Loading test data...";
+        }
+
+        //console.log("Render this.state.resultsText  is "+this.state.resultsText );
         const updateResponsiveData = (is800w, isPortrait, isTabletOrMobile) => {
             if(this.state.is800w!==is800w || this.state.isPortrait!==isPortrait || this.state.isTabletOrMobile!==isTabletOrMobile) {
                 console.log("is800w "+is800w+" isPortrait "+isPortrait);
@@ -158,19 +501,27 @@ class ShowTestsQuestions extends Component {
         }
 
         const handleCloseAreYouSure = () => {
-            this.setState({isAreYouSureOpen: false});
+            let item = {...this.state};
+            item.isAreYouSureOpen = false;
+            this.setState(item);
         };
+
         const handleClose = (editData, success) => {
             if(success) {
                 axios.get(commonData.getApiLink()+"testssessionpoints/"+editData.id, commonData.config)
                     .then(res => {
-                        console.log(res.data);
-                        let item = {...this.state};
-                        item.isPopupEditorOpened = false;
-                        item.result = res.data;
-                        this.setState(item);
-                    })
-                    .catch(error => {
+                        let points = res.data;
+                        axios.get(commonData.getApiLink()+"testsMaxPoints/"+this.state.testId, commonData.config)
+                            .then(res => {
+                                let maxPoints = res.data;
+                                let item = {...this.state};
+                                item.isPopupEditorOpened = false;
+                                item.result = item.test.resultsText+" "+points+"/"+maxPoints;
+                                this.setState(item);
+                            }).catch(error => {
+                            console.log("Error is"+error);
+                        });
+                    }).catch(error => {
                         console.log("Error is"+error);
                     });
             }
@@ -182,7 +533,11 @@ class ShowTestsQuestions extends Component {
         } else if(this.state.isTabletOrMobile) {
             dimFactor=0.7;
         }
-        console.log("current q: "+this.state.currentQuestion+" currentQuestionOptions.size "+this.state.currentQuestionOptions.length+" isAreYouSureOpen "+this.state.isAreYouSureOpen);
+        //console.log("current q: "+this.state.currentQuestion+" currentQuestionOptions.size "+this.state.currentQuestionOptions.length+" isAreYouSureOpen "+this.state.isAreYouSureOpen);
+        const handleTimerEnd = () => {
+            this.nextQuestionWhenTimerHasExpired();
+        };
+
         return (
             <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" sx={ { backgroundColor: "lightyellow", backgroundImage: `url(${bg})`,backgroundSize: "cover",color: "#ffffff" }}>
                 <Helmet>
@@ -202,7 +557,7 @@ class ShowTestsQuestions extends Component {
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={handleCloseAreYouSure}>Cancel</Button>
-                        <Button onClick={this.handleSubmit} autoFocus>Submit</Button>
+                        <Button onClick={this.startSubmitProcess} autoFocus>Submit</Button>
                     </DialogActions>
                 </Dialog>
                 <Dialog
@@ -217,7 +572,7 @@ class ShowTestsQuestions extends Component {
                             noRows={true}
                             parentSelectedRowId={undefined}
                             closeFeedback={handleClose}
-                            selectedRowData={this.getData}
+                            selectedRowData={this.prepareTestDataToSave}
                             apiEditName="testssessions"
                             columns={TestsSessions.Columns}
                             tabLinkColumn={undefined}
@@ -227,37 +582,71 @@ class ShowTestsQuestions extends Component {
                 <ResponsiveData updateResponsiveData={updateResponsiveData}/>
                 {
                     this.state.result===undefined?
-                        <Paper sx={{ width: '750px', mb: 2, padding: 1}}>
+                        <Paper sx={{ width: '750px', mb: 2, padding: 1, margin: "15px",borderRadius: "10px", border: "2px solid #0A0610",backgroundColor: '#f4ede5', color: '#000000',}}>
                             <br/>
+                            <TableContainer component={Paper} sx={{
+                                borderTopLeftRadius: "10px", // Set this to 0 to keep the top left corner straight
+                                borderTopRightRadius: "10px", // Set this to 0 to keep the top right corner straight
+                                borderBottomLeftRadius: "0px", // Adjust the value for rounded bottom left corner
+                                borderBottomRightRadius: "0px", // Adjust the value for rounded bottom right corner
+                                border: "1px solid #0A0610",backgroundColor: '#f4ede5', color: '#000000',}}>
+                                <Table border={0} >
+                                    <TableBody>
+                                        <TableRow>
+                                            <TableCell sx={{padding: 1, width: '33%'}} align="left">
+                                                <a href="/"><Button sx={{color: '#000000',}}>HOME</Button></a>
+                                            </TableCell>
+                                            <TableCell sx={{padding: 1, width: '33%'}} align="center">
+                                                {(this.state.correct===undefined || this.state.test.detailedResults===0)?
+                                                    "":
+                                                    this.state.correct?
+                                                        <Button variant="contained" color="success">CORRECT</Button>:
+                                                        <Button variant="contained" color="error">INCORRECT</Button>}
+                                            </TableCell>
+                                            <TableCell sx={{padding: 1, width: '33%'}} align="right">
+                                                {this.state.hasTimers?<Timer initialTime={this.state.questions[this.state.currentQuestion]["maxTime"]} onTimerEnd={handleTimerEnd} ref={(ref) => (this.timerRef = ref)}/>:""}
+                                            </TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+
                             {
                                 this.state.isPortrait?
                                     Array.isArray(this.state.currentQuestionOptions) &&
-                                    <TableContainer component={Paper} >
+                                    <TableContainer component={Paper}>
                                         <Table border={0} >
                                             <TableBody>
                                                 <TableRow>
                                                     <TableCell sx={{padding: 0}} align="center">
-                                                        <b>{this.state.questions[this.state.currentQuestion]["description"]}<br/></b>
-                                                        <br/>
-                                                        <img src={`${this.state.questions[this.state.currentQuestion]["image"]}`} width={300*dimFactor} sx={{border: 1, padding:"2px"}} alt="..."/>
+                                                        <Table border={0} >
+                                                            <TableBody>
+                                                                <TableRow>
+                                                                    <TableCell sx={{padding: 0}} align="center">
+                                                                        <b>
+                                                                            <font size={this.state.questions[this.state.currentQuestion]["fontSize"]}>
+                                                                                {this.state.questions[this.state.currentQuestion]["description"]}
+                                                                            </font>
+                                                                            <br/>
+                                                                        </b>
+                                                                        <br/>
+                                                                        {
+                                                                            this.state.questions[this.state.currentQuestion]["image"]===null?
+                                                                                "":
+                                                                                <img src={`${this.state.questions[this.state.currentQuestion]["image"]}`} width={300*dimFactor} sx={{border: 1, padding:"2px"}} alt="..."/>
+                                                                        }
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            </TableBody>
+                                                        </Table>
                                                     </TableCell>
                                                 </TableRow>
+
                                                 <TableRow>
                                                     <TableCell sx={{padding: 0}} align="center">
                                                         <TableContainer component={Paper}>
                                                             <Table border={0}>
-                                                                <TableBody>
-                                                                    <TableRow>
-                                                                        {this.answerCell(0, dimFactor)}
-                                                                        {this.answerCell(1, dimFactor)}
-                                                                        {this.answerCell(2, dimFactor)}
-                                                                    </TableRow>
-                                                                    <TableRow>
-                                                                        {this.answerCell(3, dimFactor)}
-                                                                        {this.answerCell(4, dimFactor)}
-                                                                        {this.answerCell(5, dimFactor)}
-                                                                    </TableRow>
-                                                                </TableBody>
+                                                                {this.answerSection(dimFactor)}
                                                             </Table>
                                                         </TableContainer>
                                                     </TableCell>
@@ -271,25 +660,31 @@ class ShowTestsQuestions extends Component {
                                             <TableBody>
                                                 <TableRow>
                                                     <TableCell sx={{padding: 0}} align="center">
-                                                        <b>{this.state.questions[this.state.currentQuestion]["description"]}<br/></b>
-                                                        <br/>
-                                                        <img src={`${this.state.questions[this.state.currentQuestion]["image"]}`} width={300*dimFactor} sx={{border: 1, padding:"2px"}} alt="..."/>
+                                                        <Table border={0} >
+                                                            <TableBody>
+                                                                <TableRow>
+                                                                    <TableCell sx={{padding: 0}} align="center">
+                                                                        <b>
+                                                                            <font size={this.state.questions[this.state.currentQuestion]["fontSize"]}>
+                                                                                {this.state.questions[this.state.currentQuestion]["description"]}
+                                                                            </font>
+                                                                            <br/>
+                                                                        </b>
+                                                                        <br/>
+                                                                        {
+                                                                            this.state.questions[this.state.currentQuestion]["image"]===null?
+                                                                                "":
+                                                                                <img src={`${this.state.questions[this.state.currentQuestion]["image"]}`} width={300*dimFactor} sx={{border: 1, padding:"2px"}} alt="..."/>
+                                                                        }
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            </TableBody>
+                                                        </Table>
                                                     </TableCell>
                                                     <TableCell>
                                                         <TableContainer component={Paper}>
                                                             <Table sx={{width:300}} border={0}>
-                                                                <TableBody>
-                                                                    <TableRow>
-                                                                        {this.answerCell(0, dimFactor)}
-                                                                        {this.answerCell(1, dimFactor)}
-                                                                        {this.answerCell(2, dimFactor)}
-                                                                    </TableRow>
-                                                                    <TableRow>
-                                                                        {this.answerCell(3, dimFactor)}
-                                                                        {this.answerCell(4, dimFactor)}
-                                                                        {this.answerCell(5, dimFactor)}
-                                                                    </TableRow>
-                                                                </TableBody>
+                                                                {this.answerSection(dimFactor)}
                                                             </Table>
                                                         </TableContainer>
                                                     </TableCell>
@@ -301,31 +696,87 @@ class ShowTestsQuestions extends Component {
                             <br/>
                             <Box align="center">
                                 {
-                                    Array.isArray(this.state.questions) &&
-                                    this.state.questions.map((row, index) => {
-                                        let variant = "outlined";
-                                        let color = "error";
-                                        if(this.state.currentQuestion===index) {
-                                            variant = "contained";
-                                        }
-                                        if(this.state.questionsAnswers[index]!==undefined) {
-                                            color = "success";
-                                        }
-                                        console.log("index "+index+" color "+color);
-                                        return (
-                                            <Button id={index} key={"page"+index} variant={variant} onClick={this.handleQuestionChange} color={color}><b>{index+1}</b></Button>
-                                        )
-                                    })
+                                    this.state.hasTimers===true?<Box align="left">{"At question "+(this.state.currentQuestion+1)+"/"+this.state.questions.length}</Box>:
+                                        Array.isArray(this.state.questions) && this.state.questions.map((row, index) => {
+                                            let variant = "outlined";
+                                            if(this.state.currentQuestion===index) {
+                                                variant = "contained";
+                                            }
+                                            const buttonStyle =
+                                                (this.state.test.detailedResults === 1 && this.state.questionsCorrect[index]===false)?this.state.buttonStyleWrong:
+                                                    this.state.currentQuestion===index?
+                                                        this.state.buttonStyleCurrent:
+                                                        (
+                                                            (this.state.questionsAnswers[index]===undefined || this.state.questionsAnswers[index]==='')
+                                                            &&
+                                                            (this.state.questionsTextAnswers[index]===undefined || this.state.questionsTextAnswers[index]==='')
+                                                        ) ?
+                                                            this.state.buttonStyleBase : this.state.buttonStyleAnswered;
+                                            return (
+                                                <Button
+                                                    id={index} key={"page"+index}
+                                                    variant={variant}
+                                                    onClick={this.handleQuestionChange}
+                                                    sx={buttonStyle}
+                                                ><b>{index+1}</b></Button>
+                                            )
+                                        })
                                 }
                                 {/*<Button id="lastPage" key="lastPage" variant="outlined" sx={{width: 100}} onClick={this.handleQuestionChange}>Last</Button>*/}
-                                <Button id="submit" key="submit" variant="outlined" sx={{width: 200}} onClick={this.handleCheckSubmit}>Submit answers</Button>
+                                <br/>
+                                {
+                                    this.state.hasTimers===true?"":<Button id="submit" key="submit" variant="outlined" sx={{width: 200, ...this.state.buttonStyleCurrent}} onClick={this.handleCheckSubmit}>Submit answers</Button>
+                                }
+
                             </Box>
                         </Paper> :
-                        <Paper sx={{ width: '750px', mb: 2, padding: 1}}>
+                        <Paper sx={{ width: '750px', mb: 2, padding: 1, margin:1,
+                            borderTopLeftRadius: "0px", // Set this to 0 to keep the top left corner straight
+                            borderTopRightRadius: "0px", // Set this to 0 to keep the top right corner straight
+                            borderBottomLeftRadius: "10px", // Adjust the value for rounded bottom left corner
+                            borderBottomRightRadius: "10px", // Adjust the value for rounded bottom right corner
+                            border: "1px solid #0A0610",backgroundColor: '#f4ede5', color: '#000000',}}>
+                            <br/>
+                            <a href="/"><Button sx={{color: '#000000',}}>HOME</Button></a>
                             <br/>
                             <br/>
-                            <br/>
-                            <h1 align="center">Your Iq is {this.state.result}</h1>
+                            <h1 align="center">{this.state.result}</h1>
+                            <TableContainer component={Paper}>
+                                <Table size="small" aria-label="a dense table">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell align="left"><b>Nr.</b></TableCell>
+                                            <TableCell align="left"><b>Question</b></TableCell>
+                                            <TableCell align="left"><b>Status</b></TableCell>
+                                            <TableCell align="left"><b>Correct answer</b></TableCell>
+                                            <TableCell align="left"><b>Your answer</b></TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {this.state.test.detailedResults === 1 && this.state.questions.map((q, i) => {
+                                            const isCorrect = this.state.test.options === 1
+                                                ? this.state.questionsAnswers[i]?.id === q["idQuestionsOptionsCorrect"]["id"]
+                                                : this.state.questionsCorrect[i] === true;
+
+                                            return (
+                                                <TableRow key={i} className={isCorrect ? 'normalCell' : 'highlightedCell'}>
+                                                    <TableCell align="left">{i + 1}.</TableCell>
+                                                    <TableCell align="left">{q.description}</TableCell>
+                                                    <TableCell align="left">{isCorrect ? 'Correct' : 'Incorrect'}</TableCell>
+                                                    <TableCell align="left">{this.state.test.options === 1
+                                                        ? q["idQuestionsOptionsCorrect"]["description"]
+                                                        : this.state.questionsOptions[i].map((qo, j) => (<div key={j}>{qo.description}</div>))
+                                                    }</TableCell>
+                                                    <TableCell align="left">{this.state.test.options === 1
+                                                        ? this.state.questionsAnswers[i]?.description
+                                                        : this.state.questionsTextAnswers[i]
+                                                    }</TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
                             <br/>
                             <br/>
                             <br/>

@@ -21,7 +21,7 @@ public class Questions implements Serializable {
     public Questions() {
     }
 
-    public Questions(Long id, String description, QuestionsOptions idQuestionsOptionsCorrect, String image, Tests idTests, Integer orderq, Integer points, String explication) {
+    public Questions(Long id, String description, QuestionsOptions idQuestionsOptionsCorrect, String image, Tests idTests, Integer orderq, Integer points, String explication, Integer fontSize, Integer maxTime) {
         this.id = id;
         this.description = description;
         this.idQuestionsOptionsCorrect = idQuestionsOptionsCorrect;
@@ -29,6 +29,8 @@ public class Questions implements Serializable {
         this.idTests = idTests;
         this.points = points;
         this.explication = explication;
+        this.fontSize = fontSize;
+        this.maxTime = maxTime;
     }
     
     @Id
@@ -63,7 +65,6 @@ public class Questions implements Serializable {
     public void setIdQuestionsOptionsCorrect(QuestionsOptions idQuestionsOptionsCorrect) {
         this.idQuestionsOptionsCorrect = idQuestionsOptionsCorrect;
     }
-
 
     @ManyToOne(cascade = {CascadeType.DETACH})
     @JoinColumn(name="id_tests")
@@ -111,5 +112,23 @@ public class Questions implements Serializable {
     }
     public void setExplication(String explication) {
             this.explication = explication;
+    }     
+
+    @Column(name="font_size")
+    private Integer fontSize;
+    public Integer getFontSize() {
+        return fontSize;
+    }
+    public void setFontSize(Integer fontSize) {
+        this.fontSize = fontSize;
+    }     
+
+    @Column(name="max_time")
+    private Integer maxTime;
+    public Integer getMaxTime() {
+        return maxTime;
+    }
+    public void setMaxTime(Integer maxTime) {
+        this.maxTime = maxTime;
     }     
 }

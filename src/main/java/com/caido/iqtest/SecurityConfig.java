@@ -37,7 +37,7 @@ public class SecurityConfig {
 //                .anyRequest().permitAll()
 //                ;
         //http.httpBasic();
-        
+
         return http.build();    
     }
 

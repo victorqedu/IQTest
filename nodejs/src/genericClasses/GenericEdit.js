@@ -1,5 +1,15 @@
 import React, {Component} from "react";
-import {Box, Button, Container, Input, MenuItem, Select, TextField, Typography} from "@mui/material";
+import {
+    Box,
+    Button,
+    Checkbox,
+    Container,
+    Input,
+    MenuItem,
+    Select,
+    TextField,
+    Typography
+} from "@mui/material";
 import axios from "axios";
 import {Form, FormGroup} from "reactstrap";
 import commonData from "../genericClasses/commonData";
@@ -80,6 +90,10 @@ class GenericEdit extends Component {
                     } else {
                         console.log("handleChange for name "+name+" is not integer");
                     }
+                } else if(col.type==="boolean") {
+                    console.log("handle change for boolean "+target.value);
+                    obj[name] = target.checked ? 1 : 0;
+                    item.changed=1;
                 } else {
                     obj[name] = target.value;
                     item.changed=1;
@@ -324,9 +338,9 @@ class GenericEdit extends Component {
                                                     {
                                                         Array.isArray(this.state.selectData[column.id])?
                                                             this.state.selectData[column.id].map((row,index) => (
-                                                                column.selectApiColumnType==="image"?
+                                                                column.selectApiColumnType==="image" ?
+                                                                    row[column.selectApiColumnName]===null ? row[column.selectApiColumnNameBackup]===null?"":<MenuItem key={row.id} value={row.id}>{row[column.selectApiColumnNameBackup]}</MenuItem>:
                                                                     <MenuItem key={row.id} value={row.id}><img src={`${row[column.selectApiColumnName]}`} width={100} sx={{border: 1, padding:"2px"}} alt="..."/></MenuItem>:
-                                                                    /*<MenuItem key={row.id} value={row.id}>{row.id}</MenuItem>:*/
                                                                     <MenuItem key={row.id} value={row.id}>{row[column.selectApiColumnName]}</MenuItem>
                                                         )):null
                                                     }
@@ -334,20 +348,27 @@ class GenericEdit extends Component {
                                                 <br/>
                                                 <br/>
                                             </Box>:
-                                            <Box>
-                                                {column.label}{column.mandatory?"*":""}  :
-                                                <TextField
-                                                    id={column.id}
-                                                    //label={column.label}
-                                                    variant="outlined"
-                                                    value={this.state.editData[column.id]||''}
-                                                    onChange={this.handleChange}
-                                                    autoComplete='off'
-                                                    type={column.type==="numeric"?"number":""}
-                                                    sx={{width: "100%"}}/>
-                                                <br/>
-                                                <br/>
-                                            </Box> :
+                                            column.type==="boolean"?
+                                                <Box>
+                                                    {column.label}{column.mandatory?"*":""}  :
+                                                    <Checkbox  id={column.id} variant="outlined" checked={this.state.editData[column.id] === 1} onChange={this.handleChange}/>
+                                                    <br/>
+                                                    <br/>
+                                                </Box> :
+                                                <Box>
+                                                    {column.label}{column.mandatory?"*":""}  :
+                                                    <TextField
+                                                        id={column.id}
+                                                        //label={column.label}
+                                                        variant="outlined"
+                                                        value={this.state.editData[column.id]||''}
+                                                        onChange={this.handleChange}
+                                                        autoComplete='off'
+                                                        type={column.type==="numeric"?"number":""}
+                                                        sx={{width: "100%"}}/>
+                                                    <br/>
+                                                    <br/>
+                                                </Box> :
                                     <Input
                                         type="hidden"
                                         id={column.id}

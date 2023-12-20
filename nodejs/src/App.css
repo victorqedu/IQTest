@@ -36,3 +36,19 @@
     transform: rotate(360deg);
   }
 }
+
+.glowing-text-button {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.9); /* Adjust the values for the glowing effect */
+}
+
+&:hover {
+   background-color: 'FF0000'; /* Set the hover background color */
+   color: '#000000'; /* Set the hover font color */
+}
+
+.highlightedCell {
+  background-color: #FFA07A;
+}
+.normalCell {
+  background-color: white;
+}

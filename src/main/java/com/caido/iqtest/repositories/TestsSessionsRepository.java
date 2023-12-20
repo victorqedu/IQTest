@@ -11,10 +11,16 @@ public interface TestsSessionsRepository extends JpaRepository<TestsSessions, Lo
     @Override
     List<TestsSessions> findAll();
 
-    @Query("select sum(q.points)\n" +
+    @Query("select coalesce(sum(q.points), 0) \n" +
         "from TestsSessionsAnswers tsa \n" +
         "join Questions q on (q.id = tsa.idQuestions and q.idQuestionsOptionsCorrect = tsa.idQuestionsOptions)\n" +
         "where tsa.idTestsSessions.id = :id")
-    Integer getPoints(@Param("id") Long id);
+    Integer getPointsOptions(@Param("id") Long id);
 
+    @Query("select coalesce(sum(q.points) ,0)\n" +
+        "from TestsSessionsAnswers tsa  \n" +
+        "join QuestionsOptions qo on (qo.idQuestions = tsa.idQuestions and lower(qo.description) = lower(tsa.textResponse))\n" +
+        "join Questions q on (q.id = qo.idQuestions)\n" +
+        "where tsa.idTestsSessions.id = :id")
+    Integer getPointsText(@Param("id") Long id);
 }

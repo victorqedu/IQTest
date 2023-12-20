@@ -11,7 +11,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import org.hibernate.annotations.Type;
 
 @Entity
 @Table(name="questions_options")
@@ -20,10 +19,12 @@ public class QuestionsOptions implements Serializable {
     public QuestionsOptions() {
     }
 
-    public QuestionsOptions(Long id, Questions idQuestions, String image) {
+    public QuestionsOptions(Long id, Questions idQuestions, String image, Integer fontSize, String description) {
         this.id = id;
         this.idQuestions = idQuestions;
         this.image = image;
+        this.fontSize = fontSize;
+        this.description = description;
     }
 
     @Id
@@ -57,4 +58,23 @@ public class QuestionsOptions implements Serializable {
     public void setImage(String image) {
             this.image = image;
     }
+    @Column(name="font_size")
+    private Integer fontSize;
+    public Integer getFontSize() {
+        return fontSize;
+    }
+    public void setFontSize(Integer fontSize) {
+        this.fontSize = fontSize;
+    }     
+
+    @Column(name="description")
+    @NotNull
+    private String description;
+    public String getDescription() {
+            return description;
+    }
+    public void setDescription(String description) {
+            this.description = description;
+    }
+
 }

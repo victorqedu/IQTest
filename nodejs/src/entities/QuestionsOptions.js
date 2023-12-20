@@ -31,6 +31,26 @@ class QuestionsOptions extends Component {
             size: 'small',
             editable: true,
         },
+        {
+            id: 'fontSize',
+            numeric: true,
+            disablePadding: false,
+            label: 'Dimensiune font',
+            type: 'integer',
+            columnVisible: true,
+            size: 'small',
+            editable: true,
+        },
+        {
+            id: 'description',
+            numeric: false,
+            disablePadding: false,
+            label: 'Descriere',
+            type: 'text',
+            columnVisible: true,
+            size: 'small',
+            editable: true,
+        },
     ];
     static DEFAULT_ORDER = 'asc';
     static DEFAULT_ORDER_BY = 'name';

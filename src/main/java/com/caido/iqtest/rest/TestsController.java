@@ -1,5 +1,6 @@
 package com.caido.iqtest.rest;
 
+import com.caido.iqtest.entity.Subjects;
 import com.caido.iqtest.entity.Tests;
 import com.caido.iqtest.repositories.TestsRepository;
 import java.util.List;
@@ -34,12 +35,30 @@ public class TestsController {
         this.assembler = assembler;
     }
 
+    @GetMapping("/testsMaxPoints/{id}")
+    Integer getMaxPoints(@PathVariable Long id) {
+        System.out.println("Start getMaximumPoints for test id "+id);
+        Tests test = new Tests();
+        test.setId(id);
+        return repository.getMaxPoints(test);
+    }
+
     @GetMapping("/tests")
     CollectionModel<EntityModel<Tests>> getAll() {
         List<EntityModel<Tests>> c = repository.findAll().stream() 
             .map(assembler::toModel) 
             .collect(Collectors.toList());
         return CollectionModel.of(c, linkTo(methodOn(TestsController.class).getAll()).withSelfRel());
+    }
+    
+    @GetMapping("/testsWithSubjectId/{id}")
+    CollectionModel<EntityModel<Tests>> findAllWithSubjectId(@PathVariable Long id) {
+        Subjects s = new Subjects();
+        s.setId(id);
+        List<EntityModel<Tests>> c = repository.findAllWithSubjectId(s).stream() 
+            .map(assembler::toModel) 
+            .collect(Collectors.toList());
+        return CollectionModel.of(c, linkTo(methodOn(TestsController.class).findAllWithSubjectId(id)).withSelfRel());
     }
     
     @PostMapping("/tests")

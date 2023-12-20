@@ -74,4 +74,13 @@ public class TestsSessionsAnswers implements Serializable {
         this.idQuestionsOptions = idQuestionsOptions;
     }
 
+    @Column(name="text_response")
+    private String textResponse;
+    public String getTextResponse() {
+        return textResponse;
+    }
+    public void setTextResponse(String textResponse) {
+        this.textResponse = textResponse;
+    }
+
 }

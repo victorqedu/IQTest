@@ -61,7 +61,7 @@ public class TestsSessionsController {
     @GetMapping("/testssessionpoints/{id}")
     Integer getPoints(@PathVariable Long id) {
         System.out.println("Start getPoints for id "+id);
-        return repository.getPoints(id);
+        return repository.getPointsOptions(id)+repository.getPointsText(id);
     }
 
     @PutMapping("/testssessions/{id}")
