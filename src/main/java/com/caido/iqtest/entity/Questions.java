@@ -131,4 +131,13 @@ public class Questions implements Serializable {
     public void setMaxTime(Integer maxTime) {
         this.maxTime = maxTime;
     }     
+
+    @Column(name="image_width")
+    private Integer imageWidth;
+    public Integer getImageWidth() {
+        return imageWidth;
+    }
+    public void setImageWidth(Integer imageWidth) {
+        this.imageWidth = imageWidth;
+    }
 }

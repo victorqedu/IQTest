@@ -15,6 +15,6 @@ public interface TestsRepository extends JpaRepository<Tests, Long> {
     @Query("select sum(q.points) from Questions q where q.idTests = :id")
     Integer getMaxPoints(@Param("id") Tests test);
 
-    @Query("SELECT c FROM Tests c WHERE c.idSubjects = :subject ORDER BY c.id DESC")
+    @Query("SELECT c FROM Tests c WHERE c.idSubjects = :subject and c.disabled = 0 ORDER BY c.id DESC")
     List<Tests> findAllWithSubjectId(@Param("subject") Subjects subject);
 }

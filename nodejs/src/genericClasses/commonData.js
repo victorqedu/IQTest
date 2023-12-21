@@ -16,6 +16,7 @@ class commonData extends Component {
         return this.API_PROTOCOL+"://"+this.API_HOST+":"+this.API_PORT+"/"+this.API_PATH;
     }
     static config = {
+        timeout: 60000,
         withCredentials: true,
         //withCredentials: false,
         headers: {
@@ -175,8 +176,15 @@ class commonData extends Component {
         let data;
         await axios.get(url, commonData.config)
             .then(res => {
-                data = res.data["_embedded"][apiPath];
-                console.log(res) ;
+                if(res.data["_embedded"]!==undefined) {
+                    //console.log("_embedded is defined");
+                    data = res.data["_embedded"][apiPath];
+                } else {
+                    //console.log("_embedded is undefined");
+                    data = res.data[apiPath];
+                    //console.log("data is "+data);
+                }
+                //console.log(res);
             })
             .catch(error => {
                 console.log("Error is"+error);

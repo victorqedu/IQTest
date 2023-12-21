@@ -71,6 +71,24 @@ public class Tests implements Serializable {
         this.options = options;
     }
     
+    @Column(name="disabled")
+    private Integer disabled;
+    public Integer getDisabled() {
+        return disabled;
+    }
+    public void setDisabled(Integer disabled) {
+        this.disabled = disabled;
+    }
+    
+    @Column(name="random_images")
+    private Integer randomImages;
+    public Integer getRandomImages() {
+        return randomImages;
+    }
+    public void setRandomImages(Integer randomImages) {
+        this.randomImages = randomImages;
+    }
+    
     @ManyToOne(cascade = {CascadeType.DETACH})
     @JoinColumn(name="id_subjects")
     @NotNull
@@ -82,6 +100,23 @@ public class Tests implements Serializable {
         this.idSubjects = idSubjects;
     }
 
-    
+    @Column(name="max_time")
+    private Integer maxTime;
+    public Integer getMaxTime() {
+        return maxTime;
+    }
+    public void setMaxTime(Integer maxTime) {
+        this.maxTime = maxTime;
+    }     
+
+    @Column(name="details_per_question")
+    private Integer detailsPerQuestion;
+    public Integer getDetailsPerQuestion() {
+        return detailsPerQuestion;
+    }
+    public void setDetailsPerQuestion(Integer detailsPerQuestion) {
+        this.detailsPerQuestion = detailsPerQuestion;
+    }     
+
     
 }

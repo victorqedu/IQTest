@@ -117,7 +117,7 @@ class GenericTable extends Component {
         console.log("getDataFromApi "+url);
         axios.get(url, commonData.config)
             .then(res => {
-                console.log(res.data);
+                //console.log(res.data);
                 item.rows = res.data["_embedded"][this.state.apiPath];
                 const sortedRows = commonData.sort(item.rows, commonData.getComparator(item.order, item.orderBy));
                 const updatedRows = sortedRows.slice(
@@ -337,7 +337,7 @@ class GenericTable extends Component {
          * @param editData
          * @param success
          */
-        const handleClose = (editData, success) => {
+        const handleClose = (editData, success, multilpleEditData) => {
             //console.log("handleClose success "+success+" editData "+JSON.stringify(editData));
             if(this.state.isPopupEditorOpened) {
                 let item = {...this.state};
@@ -470,7 +470,7 @@ class GenericTable extends Component {
                                 <TableBody>
                                     {this.checkReadyToShowData()
                                         ? this.state.filteredRows.map(row => {
-                                            console.log(row);
+                                            //console.log(row);
                                             /*return <commonData.StyledTableRow*/
                                             return <TableRow
                                                 key={row.id}
@@ -483,15 +483,15 @@ class GenericTable extends Component {
                                                 {
                                                     this.state.config.Columns.map((col, i) =>
                                                         {
-                                                            console.log("row[col.id]: ");
-                                                            console.log("col.id: "+col.id+" row[col.id]: "+row[col.id]);
+                                                            //console.log("row[col.id]: ");
+                                                            //console.log("col.id: "+col.id+" row[col.id]: "+row[col.id]);
                                                             return col.type==="boolean"?
                                                                 <commonData.StyledTableCell key={i + "_" + row[col.id]}
                                                                                             align={col.numeric ? 'right' : 'left'}
                                                                                             sx={{"display": col.columnVisible === false ? 'none' : ''}}>
                                                                     {row[col.id]===1?"Da":"Nu"}
                                                                 </commonData.StyledTableCell>:
-                                                                col.type==="file"?
+                                                                (col.type==="file" || col.type==="fileMultiple" )?
                                                                 <commonData.StyledTableCell key={i + "_" + row[col.id]}
                                                                                             align={col.numeric ? 'right' : 'left'}
                                                                                             sx={{"display": col.columnVisible === false ? 'none' : ''}}>

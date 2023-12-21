@@ -21,6 +21,7 @@ import { Helmet } from 'react-helmet';
 import ResponsiveData from "../genericClasses/ResponsiveData";
 import Timer from "../genericClasses/Timer";
 import '../App.css';
+import Countdown from "react-countdown";
 
 class ShowTestsQuestions extends Component {
     constructor(props) {
@@ -40,6 +41,7 @@ class ShowTestsQuestions extends Component {
         this.saveCurrentQuestionData = this.saveCurrentQuestionData.bind(this);
         this.genericNextQuestion = this.genericNextQuestion.bind(this);
         this.showErrorAndMoveToNextQuestion = this.showErrorAndMoveToNextQuestion.bind(this);
+        this.randomImage = this.randomImage.bind(this);
 
         this.state = {
             questions: this.props.questions,
@@ -132,6 +134,8 @@ class ShowTestsQuestions extends Component {
             }).catch(error => {
                 console.log("Error is"+error);
             });
+
+
     }
 
     /**
@@ -193,6 +197,7 @@ class ShowTestsQuestions extends Component {
         if(item.currentQuestionOptions!==undefined && item.currentQuestionOptions.length>0) {
             this.shuffleArray(item.currentQuestionOptions);
         }
+        await this.randomImage(item, 0);
         this.setState(item);
     }
 
@@ -296,6 +301,18 @@ class ShowTestsQuestions extends Component {
         }
     }
 
+    async randomImage(item, currentQuestion) {
+        console.log("this.state.test.randomImages "+this.state.test.randomImages);
+        if(this.state.test.randomImages===1) {
+            if(item.questions[currentQuestion]["image"]===undefined || item.questions[currentQuestion]["image"]===null) {
+                item.questions[currentQuestion]["image"] = await commonData.getDataFromApi("getRandomImage", undefined, "image");
+                if(item.questions[currentQuestion]["imageWidth"]===null || item.questions[currentQuestion]["imageWidth"]===undefined) {
+                    item.questions[currentQuestion]["imageWidth"] = 400;
+                }
+            }
+        }
+    }
+
     /**
      Displays if the current answer is correct/incorrect and goes to the next question
      * @returns {Promise<void>}
@@ -308,6 +325,8 @@ class ShowTestsQuestions extends Component {
         }
 
         let currentQuestionOptions = await commonData.getDataFromApi(QuestionsOptions.apiName, item.questions[currentQuestion]["id"], QuestionsOptions.apiPath);
+        await this.randomImage(item,currentQuestion);
+        console.log("in genericNextQuestion current q font is "+item.questions[currentQuestion]?.fontSize);
         await this.showErrorAndMoveToNextQuestion(item, currentQuestion, currentQuestionOptions);
     }
 
@@ -370,18 +389,33 @@ class ShowTestsQuestions extends Component {
      */
     answerSection(dimFactor) {
         if(this.state.test.options===1) {
-            return <TableBody>
-                <TableRow>
-                    {this.answerCell(0, dimFactor)}
-                    {this.answerCell(1, dimFactor)}
-                    {this.answerCell(2, dimFactor)}
-                </TableRow>
-                <TableRow>
-                    {this.answerCell(3, dimFactor)}
-                    {this.answerCell(4, dimFactor)}
-                    {this.answerCell(5, dimFactor)}
-                </TableRow>
-            </TableBody>;
+            let questionsLen = this.state.currentQuestionOptions.length;
+            if(questionsLen<=4) {
+                return <TableBody>
+                    <TableRow>
+                        {questionsLen>0 && this.answerCell(0, dimFactor)}
+                        {questionsLen>1 && this.answerCell(1, dimFactor)}
+                    </TableRow>
+                    <TableRow>
+                        {questionsLen>2 && this.answerCell(2, dimFactor)}
+                        {questionsLen>3 && this.answerCell(3, dimFactor)}
+                    </TableRow>
+                </TableBody>;
+            } else {
+                return <TableBody>
+                    <TableRow>
+                        {questionsLen>0 && this.answerCell(0, dimFactor)}
+                        {questionsLen>1 && this.answerCell(1, dimFactor)}
+                        {questionsLen>2 && this.answerCell(2, dimFactor)}
+                    </TableRow>
+                    <TableRow>
+                        {questionsLen>3 && this.answerCell(3, dimFactor)}
+                        {questionsLen>4 && this.answerCell(4, dimFactor)}
+                        {questionsLen>5 && this.answerCell(5, dimFactor)}
+                    </TableRow>
+                </TableBody>;
+            }
+
         } else {
             return <TableBody>
                 <TableRow>
@@ -426,11 +460,11 @@ class ShowTestsQuestions extends Component {
     answerCell(answerNumber, dimFactor) {
         return <TableCell sx={{padding: 0, width: '33%'}} align="center">
             <Box display="flex" alignItems="center" sx={{ border: 3, padding:0.3, borderColor: this.state.currentQuestionOptions[answerNumber]["id"]===this.state.questionsAnswers[this.state.currentQuestion]?.id?"#FFAAAA":"white" }}>
-                <Button id={answerNumber} key={"page"+answerNumber} variant="" onClick={this.handleAnswer} sx={{ width: '100%', height: '100px', ...this.state.buttonStyleCurrent}}
+                <Button id={answerNumber} key={"page"+answerNumber} variant="" onClick={this.handleAnswer} sx={{ width: '100%', height: '100px', ...this.state.buttonStyleCurrent, fontSize: this.state.currentQuestionOptions[answerNumber]?.fontSize+"px"}}
                         className="glowing-text-button">
                     {
                         this.state.currentQuestionOptions[answerNumber]["image"]===null?
-                            <font size={this.state.currentQuestionOptions[answerNumber]["fontSize"]}>{this.state.currentQuestionOptions[answerNumber]["description"]}</font>:
+                            this.state.currentQuestionOptions[answerNumber]["description"]:
                             <img src={`${this.state.currentQuestionOptions[answerNumber]["image"]}`} width={100*dimFactor} sx={{border: 1, padding:"2px"}} alt="..."/>
                     }
                 </Button>
@@ -485,8 +519,21 @@ class ShowTestsQuestions extends Component {
      */
     render() {
         if(this.state.test===undefined) {
-            return "Loading test data...";
+            return "Se incarca datele...";
         }
+        const renderer = ({ hours, minutes, seconds, completed }) => {
+            if (completed) {
+                this.startSubmitProcess(null);
+                return <span>Timpul a expirat!</span>;
+            } else {
+                return (
+                    <span>
+                        Timp rămas <br/>{hours}:{minutes}:{seconds}
+                    </span>
+                );
+            }
+        };
+
 
         //console.log("Render this.state.resultsText  is "+this.state.resultsText );
         const updateResponsiveData = (is800w, isPortrait, isTabletOrMobile) => {
@@ -583,28 +630,36 @@ class ShowTestsQuestions extends Component {
                 {
                     this.state.result===undefined?
                         <Paper sx={{ width: '750px', mb: 2, padding: 1, margin: "15px",borderRadius: "10px", border: "2px solid #0A0610",backgroundColor: '#f4ede5', color: '#000000',}}>
-                            <br/>
                             <TableContainer component={Paper} sx={{
                                 borderTopLeftRadius: "10px", // Set this to 0 to keep the top left corner straight
                                 borderTopRightRadius: "10px", // Set this to 0 to keep the top right corner straight
                                 borderBottomLeftRadius: "0px", // Adjust the value for rounded bottom left corner
                                 borderBottomRightRadius: "0px", // Adjust the value for rounded bottom right corner
                                 border: "1px solid #0A0610",backgroundColor: '#f4ede5', color: '#000000',}}>
-                                <Table border={0} >
+
+                                <Table border={0}>
                                     <TableBody>
                                         <TableRow>
                                             <TableCell sx={{padding: 1, width: '33%'}} align="left">
                                                 <a href="/"><Button sx={{color: '#000000',}}>HOME</Button></a>
                                             </TableCell>
                                             <TableCell sx={{padding: 1, width: '33%'}} align="center">
-                                                {(this.state.correct===undefined || this.state.test.detailedResults===0)?
-                                                    "":
-                                                    this.state.correct?
-                                                        <Button variant="contained" color="success">CORRECT</Button>:
-                                                        <Button variant="contained" color="error">INCORRECT</Button>}
+                                                {
+                                                    (this.state.correct===undefined || this.state.test.detailsPerQuestion===0)?
+                                                        "":
+                                                        this.state.correct?
+                                                            <Button variant="contained" color="success">CORRECT</Button>:
+                                                            <Button variant="contained" color="error">INCORRECT</Button>
+                                                }
                                             </TableCell>
                                             <TableCell sx={{padding: 1, width: '33%'}} align="right">
-                                                {this.state.hasTimers?<Timer initialTime={this.state.questions[this.state.currentQuestion]["maxTime"]} onTimerEnd={handleTimerEnd} ref={(ref) => (this.timerRef = ref)}/>:""}
+                                                {
+                                                    this.state.test.maxTime>0
+                                                        ?<Countdown date={Date.now() + this.state.test.maxTime*1000} renderer={renderer}/>
+                                                        :this.state.questions[this.state.currentQuestion]["maxTime"]>0
+                                                            ?<Timer initialTime={this.state.questions[this.state.currentQuestion]["maxTime"]} onTimerEnd={handleTimerEnd} ref={(ref) => (this.timerRef = ref)}/>
+                                                            :""
+                                                }
                                             </TableCell>
                                         </TableRow>
                                     </TableBody>
@@ -622,18 +677,17 @@ class ShowTestsQuestions extends Component {
                                                         <Table border={0} >
                                                             <TableBody>
                                                                 <TableRow>
-                                                                    <TableCell sx={{padding: 0}} align="center">
+                                                                    <TableCell sx={{padding: 0, fontSize: this.state.questions[this.state.currentQuestion]?.fontSize+"px"}} align="center">
                                                                         <b>
-                                                                            <font size={this.state.questions[this.state.currentQuestion]["fontSize"]}>
-                                                                                {this.state.questions[this.state.currentQuestion]["description"]}
-                                                                            </font>
+                                                                            {this.state.questions[this.state.currentQuestion]["description"]}
                                                                             <br/>
                                                                         </b>
-                                                                        <br/>
                                                                         {
-                                                                            this.state.questions[this.state.currentQuestion]["image"]===null?
-                                                                                "":
-                                                                                <img src={`${this.state.questions[this.state.currentQuestion]["image"]}`} width={300*dimFactor} sx={{border: 1, padding:"2px"}} alt="..."/>
+                                                                            this.state.questions[this.state.currentQuestion]["image"]===null
+                                                                                ?""
+                                                                                :<img src={`${this.state.questions[this.state.currentQuestion]["image"]}`}
+                                                                                        width={this.state.questions[this.state.currentQuestion]["imageWidth"]===""?300:this.state.questions[this.state.currentQuestion]["imageWidth"]*dimFactor}
+                                                                                        className="roundedImage" alt="i1"/>
                                                                         }
                                                                     </TableCell>
                                                                 </TableRow>
@@ -663,25 +717,24 @@ class ShowTestsQuestions extends Component {
                                                         <Table border={0} >
                                                             <TableBody>
                                                                 <TableRow>
-                                                                    <TableCell sx={{padding: 0}} align="center">
+                                                                    <TableCell sx={{padding: 0, fontSize: this.state.questions[this.state.currentQuestion]?.fontSize+"px"}} align="center">
                                                                         <b>
-                                                                            <font size={this.state.questions[this.state.currentQuestion]["fontSize"]}>
-                                                                                {this.state.questions[this.state.currentQuestion]["description"]}
-                                                                            </font>
-                                                                            <br/>
+                                                                            {this.state.questions[this.state.currentQuestion]["description"]}
                                                                         </b>
                                                                         <br/>
                                                                         {
-                                                                            this.state.questions[this.state.currentQuestion]["image"]===null?
-                                                                                "":
-                                                                                <img src={`${this.state.questions[this.state.currentQuestion]["image"]}`} width={300*dimFactor} sx={{border: 1, padding:"2px"}} alt="..."/>
+                                                                            this.state.questions[this.state.currentQuestion]["image"]===null
+                                                                                ?""
+                                                                                :<img src={`${this.state.questions[this.state.currentQuestion]["image"]}`}
+                                                                                      width={this.state.questions[this.state.currentQuestion]["imageWidth"]===""?300:this.state.questions[this.state.currentQuestion]["imageWidth"]*dimFactor}
+                                                                                      className="roundedImage" alt="i1"/>
                                                                         }
                                                                     </TableCell>
                                                                 </TableRow>
                                                             </TableBody>
                                                         </Table>
                                                     </TableCell>
-                                                    <TableCell>
+                                                    <TableCell style={{ verticalAlign: 'bottom' }}>
                                                         <TableContainer component={Paper}>
                                                             <Table sx={{width:300}} border={0}>
                                                                 {this.answerSection(dimFactor)}
@@ -703,7 +756,7 @@ class ShowTestsQuestions extends Component {
                                                 variant = "contained";
                                             }
                                             const buttonStyle =
-                                                (this.state.test.detailedResults === 1 && this.state.questionsCorrect[index]===false)?this.state.buttonStyleWrong:
+                                                (this.state.test.detailsPerQuestion === 1 && this.state.questionsCorrect[index]===false)?this.state.buttonStyleWrong:
                                                     this.state.currentQuestion===index?
                                                         this.state.buttonStyleCurrent:
                                                         (

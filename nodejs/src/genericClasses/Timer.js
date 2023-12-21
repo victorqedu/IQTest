@@ -47,4 +47,5 @@ class Timer extends Component {
         return <Button sx={{color: '#000000',}}><font size={3}>{this.state.time} seconds </font></Button>;
     }
 }
+
 export default Timer;

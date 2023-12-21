@@ -36,45 +36,32 @@ public class CountriesController {
     }
 
     @GetMapping("/countries")
-    //@CrossOrigin(origins = "http://caido.ro:3000", allowCredentials = "true")
-    //@CrossOrigin
     CollectionModel<EntityModel<Countries>> getAll() {
         List<EntityModel<Countries>> c = repository.findAll().stream() 
             .map(assembler::toModel) 
             .collect(Collectors.toList());
         return CollectionModel.of(c, linkTo(methodOn(CountriesController.class).getAll()).withSelfRel());
     }
-//    List<Countries> getAll() {
-//        return repository.findAll();
-//    }
     
     @PostMapping("/countries")
-    //@CrossOrigin(origins = "http://caido.ro:3000", allowCredentials = "true")
-    //@CrossOrigin
     EntityModel<Countries> create(@RequestBody Countries o) {
         return assembler.toModel(repository.save(o));
     }
 
     @GetMapping("/countries/{id}")
-    //@CrossOrigin(origins = "http://caido.ro:3000", allowCredentials = "true")
     EntityModel<Countries> getOne(@PathVariable Long id) {
         System.out.println("Start getOne");
         //return repository.findById(id).orElseThrow(() -> new CountryNotFoundException(id));
         Countries c = repository.findById(id).orElseThrow(() -> new CountryNotFoundException(id));
         return assembler.toModel(c);
-//        return EntityModel.of(c, 
-//            linkTo(methodOn(CountriesController.class).getOne(id)).withSelfRel(),
-//            linkTo(methodOn(CountriesController.class).getAll()).withRel("countries"));
     }
 
     @PutMapping("/countries/{id}")
-    //@CrossOrigin(origins = "http://caido.ro:3000", allowCredentials = "true")
     EntityModel<Countries> replace(@RequestBody Countries c, @PathVariable Long id) {
         return assembler.toModel(repository.save(c));
     }
 
     @DeleteMapping("/countries/{id}")
-    //@CrossOrigin(origins = "http://caido.ro:3000", allowCredentials = "true")
     void delete(@PathVariable Long id) {
         repository.deleteById(id);
     }

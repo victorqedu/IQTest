@@ -26,6 +26,8 @@ class GenericEdit extends Component {
         this.handleChangeSelect = this.handleChangeSelect.bind(this);
         this.getSelectDataFromApi = this.getSelectDataFromApi.bind(this);
         this.getAllSelectData = this.getAllSelectData.bind(this);
+        this.postDataToAPI = this.postDataToAPI.bind(this);
+        this.hasMutipleFiles = this.hasMutipleFiles.bind(this);
 
         this.state = {
             // I'm making a copy of the row as described here: https://stackoverflow.com/questions/5055746/cloning-an-object-in-node-js
@@ -65,11 +67,22 @@ class GenericEdit extends Component {
         for (const col of this.props.columns) {
             if(col.id===name) {
                 if(col.type==="file") {
-                    if(target.files[0]!==undefined) {
+                    if (target.files[0] !== undefined) {
                         let file = target.files[0];
                         obj[name] = await this.getBase64(file);
-                        item.changed=1;
-                        console.log("changed "+name+" with value "+target.files[0].name+" b64 "+obj[name]);
+                        item.changed = 1;
+                        //console.log("changed " + name + " with value " + target.files[0].name + " b64 " + obj[name]);
+                    }
+                } else if(col.type==="fileMultiple") {
+                    console.log("target.files[] len "+target.files.length);
+                    if(target.files.length>0) {
+                        item.changed = 1;
+                        obj[name+"_fileList"] = [];
+                        for (let i = 0; i < target.files.length; i++) {
+                            let b64Data = await this.getBase64(target.files[i])
+                            obj[name+"_fileList"].push(b64Data) ;
+                            //console.log("adding to file list  "+b64Data);
+                        }
                     }
                 } else if(col.type==="integer") {
                     console.log("handleChange for name "+name+" col integer checking "+target.value+" is integer");
@@ -127,6 +140,42 @@ class GenericEdit extends Component {
         this.setState(item);
     }
 
+    async postDataToAPI(closePopup) {
+        //console.log("Posting JSON data :"+JSON.stringify(this.state.editData));
+        console.log("Posting JSON data");
+        await axios.post(commonData.getApiLink()+this.props.apiEditName,
+            JSON.stringify(this.state.editData), commonData.config)
+            .then(
+                res => {
+                    //console.log("POST Ret data: "+JSON.stringify(res.data));
+                    let item = {...this.state};
+                    item.editData = res.data;
+                    item.success = true;
+                    if(closePopup) {
+                        this.setState(item, ()=>{
+                            this.closePopup();
+                        });
+                    } else {
+                        this.setState(item);
+                    }
+                }
+            )
+            .catch(error => {
+                console.log("POST Error");
+                let item = {...this.state};
+                item.message = commonData.parseError(error);
+                this.setState(item);
+            });
+    }
+
+    hasMutipleFiles() {
+        for (const col of this.props.columns) {
+            if(col.type==="fileMultiple") {
+                return col.id;
+            }
+        }
+    }
+
     /**
      * Submits the edit form to the backend API
      * @param event
@@ -149,27 +198,24 @@ class GenericEdit extends Component {
             if(!error) {
                 item.message = "Changes have been detected, saving data";
                 this.setState(item);
-                if (typeof this.state.editData.id == 'undefined' || this.state.editData.id === '') {
-                    axios.post(commonData.getApiLink()+this.props.apiEditName,
-                        JSON.stringify(this.state.editData), commonData.config)
-                        .then(
-                            res => {
-                                console.log("POST Ret data: "+JSON.stringify(res.data));
-                                let item = {...this.state};
-                                item.editData = res.data;
-                                item.success = true;
-                                this.setState(item, ()=>{
-                                    this.closePopup();
-                                });
+                if (typeof this.state.editData.id == 'undefined' || this.state.editData.id === '') { // new record to be inserted
+                    let multipleColName = this.hasMutipleFiles();
+                    if(multipleColName!==undefined) {
+                        let allFiles = item.editData[multipleColName+"_fileList"];
+                        if(allFiles!==undefined) {
+                            for(let i = 0; i < allFiles.length; i++) {
+                                item.editData[multipleColName] = allFiles[i];
+                                console.log("before post for image "+i);
+                                await this.setState(item);
+                                await this.postDataToAPI(false);
+                                console.log("after post for image "+i);
                             }
-                        )
-                        .catch(error => {
-                            console.log("POST Error");
-                            let item = {...this.state};
-                            item.message = commonData.parseError(error);
-                            this.setState(item);
-                        });
-                } else {
+                            this.closePopup();
+                        }
+                    } else {
+                        this.postDataToAPI(true);
+                    }
+                } else { // old record to be updated
                     axios.put(commonData.getApiLink()+this.props.apiEditName+"/"+this.props.id,
                         JSON.stringify(this.state.editData), commonData.config)
                         .then(
@@ -204,7 +250,7 @@ class GenericEdit extends Component {
      * @param event
      */
     closePopup(event) {
-        console.log("Start closePopup for edit data "+this.state.editData);
+        //console.log("Start closePopup for edit data "+this.state.editData);
         if(event!=null) {
             event.preventDefault();
         }
@@ -221,7 +267,7 @@ class GenericEdit extends Component {
      */
     getBase64 = file => {
         return new Promise(resolve => {
-            let fileInfo;
+            //let fileInfo;
             let baseURL = "";
             // Make new FileReader
             let reader = new FileReader();
@@ -232,17 +278,17 @@ class GenericEdit extends Component {
             // on reader load somthing...
             reader.onload = () => {
                 // Make a fileInfo Object
-                console.log("Called", reader);
+                //console.log("Called", reader);
                 baseURL = reader.result;
-                console.log(baseURL);
+                //console.log(baseURL);
                 resolve(baseURL);
             };
-            console.log(fileInfo);
+            //console.log(fileInfo);
         });
     };
 
     componentDidMount() {
-        console.log("Start GE componentDidMount");
+        //console.log("Start GE componentDidMount "+JSON.stringify(this.props.selectedRowData()));
         this.getAllSelectData();
     }
 
@@ -252,12 +298,20 @@ class GenericEdit extends Component {
     async getAllSelectData() {
         let item = {...this.state};
         let changed=false;
+        console.log("Start getAllSelectData");
         for (const col of this.props.columns) {
+            console.log("in getAllSelectData "+col.type+" col name "+col.id);
             if(col.type==="select") {
                 if(item["selectData"][col.id]===undefined) {
                     let selectOptions = await this.getSelectDataFromApi(col.selectApiName, col.selectApiParameter, col);
                     item["selectData"][col.id] = selectOptions;
                     console.log("In getAllSelectDataFromApi item[\"selectData\"]["+col.id+"] = "+selectOptions);
+                    changed=true;
+                }
+            } else if(col.type==="boolean") {
+                if(this.state.editData[col.id]===undefined || this.state.editData[col.id]===null ) {
+                    console.log("At boolean field named "+col.id+" value is undefined")
+                    item.editData[col.id] = 0;
                     changed=true;
                 }
             }
@@ -284,9 +338,9 @@ class GenericEdit extends Component {
         console.log("getSelectDataFromApi "+url+" this.state.editData[selectApiParameter] "+this.state.editData[selectApiParameter]+" selectApiName "+selectApiName+" selectApiParameter "+selectApiParameter);
         await axios.get(url, commonData.config)
             .then(res => {
-                console.log(res.data);
+                //console.log(res.data);
                 rows = res.data["_embedded"][column.selectApiPath];
-                console.log("extracted rows for "+column.selectApiPath+" are "+JSON.stringify(rows));
+                //console.log("extracted rows for "+column.selectApiPath+" are "+JSON.stringify(rows));
                 /*let item = {...this.state};
                 item.state.selectData[colName] = rows;
                 this.setState(item);*/
@@ -298,7 +352,7 @@ class GenericEdit extends Component {
     }
 
     render() {
-        console.log("Start render GE "+JSON.stringify(this.state.editData));
+        //console.log("Start render GE "+JSON.stringify(this.state.editData));
         return (<>
                 <Helmet>
                     <title>Iq test</title>
@@ -355,7 +409,18 @@ class GenericEdit extends Component {
                                                     <br/>
                                                     <br/>
                                                 </Box> :
-                                                <Box>
+                                                column.type==="fileMultiple"?
+                                                    <Box sx={{border: 1, borderColor: "divider", padding:"15px", borderRadius: '5px'}}>
+                                                        <input type="file"
+                                                               id={column.id}
+                                                               onChange={this.handleChange}
+                                                               multiple
+                                                               sx={{width: "100%"}}/><br/>
+                                                        <Box sx={{padding:"2px", borderRadius: '2px'}}>
+                                                            <img src={`${this.state.editData[column.id]}`} width={100} sx={{border: 1, padding:"2px"}} alt="..."/>
+                                                        </Box>
+                                                    </Box>:
+                                                    <Box>
                                                     {column.label}{column.mandatory?"*":""}  :
                                                     <TextField
                                                         id={column.id}

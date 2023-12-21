@@ -67,6 +67,7 @@ public class QuestionsOptions implements Serializable {
         this.fontSize = fontSize;
     }     
 
+
     @Column(name="description")
     @NotNull
     private String description;

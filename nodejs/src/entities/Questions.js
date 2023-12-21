@@ -108,6 +108,16 @@ class Questions extends Component {
             size: 'regular',
             editable: true,
         },
+        {
+            id: 'imageWidth',
+            numeric: true,
+            disablePadding: false,
+            label: 'Lungime imagine',
+            type: 'integer',
+            columnVisible: true,
+            size: 'regular',
+            editable: true,
+        },
     ];
 
     static tabs = [
