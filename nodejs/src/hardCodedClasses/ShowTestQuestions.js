@@ -61,6 +61,7 @@ class ShowTestsQuestions extends Component {
             hasTimers: false,
             testId: this.props.testId,
             test: undefined,
+            endTime: undefined, //the time when this test will end because of the time restriction per test
             theResponse: "", // this is the respone in text format, when the user inputs the data in a TextField
             buttonStyleBase: {
                 borderTopLeftRadius: "15px",
@@ -130,6 +131,7 @@ class ShowTestsQuestions extends Component {
             .then(res => {
                 let item = {...this.state};
                 item.test = res.data;
+                item.endTime = Date.now() + item.test.maxTime*1000;
                 this.setState(item);
             }).catch(error => {
                 console.log("Error is"+error);
@@ -302,7 +304,6 @@ class ShowTestsQuestions extends Component {
     }
 
     async randomImage(item, currentQuestion) {
-        console.log("this.state.test.randomImages "+this.state.test.randomImages);
         if(this.state.test.randomImages===1) {
             if(item.questions[currentQuestion]["image"]===undefined || item.questions[currentQuestion]["image"]===null) {
                 item.questions[currentQuestion]["image"] = await commonData.getDataFromApi("getRandomImage", undefined, "image");
@@ -459,8 +460,12 @@ class ShowTestsQuestions extends Component {
      */
     answerCell(answerNumber, dimFactor) {
         return <TableCell sx={{padding: 0, width: '33%'}} align="center">
-            <Box display="flex" alignItems="center" sx={{ border: 3, padding:0.3, borderColor: this.state.currentQuestionOptions[answerNumber]["id"]===this.state.questionsAnswers[this.state.currentQuestion]?.id?"#FFAAAA":"white" }}>
-                <Button id={answerNumber} key={"page"+answerNumber} variant="" onClick={this.handleAnswer} sx={{ width: '100%', height: '100px', ...this.state.buttonStyleCurrent, fontSize: this.state.currentQuestionOptions[answerNumber]?.fontSize+"px"}}
+
+                <Button id={answerNumber} key={"page"+answerNumber} variant="" onClick={this.handleAnswer}
+                        sx={{ width: '97%', height: '100px', ...this.state.buttonStyleCurrent,
+                            fontSize: this.state.currentQuestionOptions[answerNumber]?.fontSize+"px",
+                            border: 3, padding:0.3, borderColor: this.state.currentQuestionOptions[answerNumber]["id"]===this.state.questionsAnswers[this.state.currentQuestion]?.id?"#FFAAAA":"white"
+                        }}
                         className="glowing-text-button">
                     {
                         this.state.currentQuestionOptions[answerNumber]["image"]===null?
@@ -468,7 +473,7 @@ class ShowTestsQuestions extends Component {
                             <img src={`${this.state.currentQuestionOptions[answerNumber]["image"]}`} width={100*dimFactor} sx={{border: 1, padding:"2px"}} alt="..."/>
                     }
                 </Button>
-            </Box>
+
         </TableCell>
     }
 
@@ -521,6 +526,7 @@ class ShowTestsQuestions extends Component {
         if(this.state.test===undefined) {
             return "Se incarca datele...";
         }
+        console.log("qqd "+this.state.questions[this.state.currentQuestion]["description"]);
         const renderer = ({ hours, minutes, seconds, completed }) => {
             if (completed) {
                 this.startSubmitProcess(null);
@@ -655,13 +661,22 @@ class ShowTestsQuestions extends Component {
                                             <TableCell sx={{padding: 1, width: '33%'}} align="right">
                                                 {
                                                     this.state.test.maxTime>0
-                                                        ?<Countdown date={Date.now() + this.state.test.maxTime*1000} renderer={renderer}/>
+                                                        ?<Countdown date={this.state.endTime} renderer={renderer}/>
                                                         :this.state.questions[this.state.currentQuestion]["maxTime"]>0
                                                             ?<Timer initialTime={this.state.questions[this.state.currentQuestion]["maxTime"]} onTimerEnd={handleTimerEnd} ref={(ref) => (this.timerRef = ref)}/>
                                                             :""
                                                 }
                                             </TableCell>
                                         </TableRow>
+                                        {
+                                            !commonData.isEmpty(this.state.test.text) &&
+                                            <TableRow>
+                                                <TableCell sx={{padding: 0}} align="left" colSpan={3}>
+                                                    <div dangerouslySetInnerHTML={{ __html: this.state.test.text }} />
+                                                </TableCell>
+                                            </TableRow>
+                                        }
+
                                     </TableBody>
                                 </Table>
                             </TableContainer>
@@ -673,20 +688,31 @@ class ShowTestsQuestions extends Component {
                                         <Table border={0} >
                                             <TableBody>
                                                 <TableRow>
-                                                    <TableCell sx={{padding: 0}} align="center">
-                                                        <Table border={0} >
+                                                    <TableCell sx={{border: 0,padding: 0}} align="center">
+                                                        <Table border={0} sx={{border: 0,padding: 0,}} >
                                                             <TableBody>
-                                                                <TableRow>
-                                                                    <TableCell sx={{padding: 0, fontSize: this.state.questions[this.state.currentQuestion]?.fontSize+"px"}} align="center">
-                                                                        <b>
-                                                                            {this.state.questions[this.state.currentQuestion]["description"]}
-                                                                            <br/>
-                                                                        </b>
+                                                                <TableRow sx={{border: 0,padding: 0,}}>
+                                                                    <TableCell sx={{padding: 0,border: 0, fontSize: this.state.questions[this.state.currentQuestion]?.fontSize+"px"}} align="left">
+                                                                        <div>
+                                                                            {
+                                                                                this.state.questions[this.state.currentQuestion]["description"].split('\n').map((line, index) => (
+                                                                                    <React.Fragment key={index}>
+                                                                                        {line}<br/>
+                                                                                    </React.Fragment>
+                                                                                ))
+                                                                            }
+                                                                        </div>
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                                <TableRow sx={{border: 0,padding: 0,}}>
+                                                                    <TableCell sx={{padding: 0,border: 0, fontSize: this.state.questions[this.state.currentQuestion]?.fontSize+"px"}} align="center">
                                                                         {
-                                                                            this.state.questions[this.state.currentQuestion]["image"]===null
+                                                                            commonData.isEmpty(this.state.questions[this.state.currentQuestion]["image"])
                                                                                 ?""
                                                                                 :<img src={`${this.state.questions[this.state.currentQuestion]["image"]}`}
-                                                                                        width={this.state.questions[this.state.currentQuestion]["imageWidth"]===""?300:this.state.questions[this.state.currentQuestion]["imageWidth"]*dimFactor}
+                                                                                        width={commonData.isEmpty(this.state.questions[this.state.currentQuestion]["imageWidth"])
+                                                                                            ?300
+                                                                                            :this.state.questions[this.state.currentQuestion]["imageWidth"]*dimFactor}
                                                                                         className="roundedImage" alt="i1"/>
                                                                         }
                                                                     </TableCell>
@@ -717,18 +743,27 @@ class ShowTestsQuestions extends Component {
                                                         <Table border={0} >
                                                             <TableBody>
                                                                 <TableRow>
-                                                                    <TableCell sx={{padding: 0, fontSize: this.state.questions[this.state.currentQuestion]?.fontSize+"px"}} align="center">
-                                                                        <b>
-                                                                            {this.state.questions[this.state.currentQuestion]["description"]}
-                                                                        </b>
-                                                                        <br/>
+                                                                    <TableCell sx={{padding: 0, fontSize: this.state.questions[this.state.currentQuestion]?.fontSize+"px"}} align="left">
+                                                                        <div>
+                                                                            {
+                                                                                this.state.questions[this.state.currentQuestion]["description"].split('\n').map((line, index) => (
+                                                                                    <React.Fragment key={index}>
+                                                                                        {line} <br/>
+                                                                                    </React.Fragment>
+                                                                                ))
+                                                                            }
+                                                                        </div>
+                                                                        <div align="center">
                                                                         {
-                                                                            this.state.questions[this.state.currentQuestion]["image"]===null
+                                                                            commonData.isEmpty(this.state.questions[this.state.currentQuestion]["image"])
                                                                                 ?""
                                                                                 :<img src={`${this.state.questions[this.state.currentQuestion]["image"]}`}
-                                                                                      width={this.state.questions[this.state.currentQuestion]["imageWidth"]===""?300:this.state.questions[this.state.currentQuestion]["imageWidth"]*dimFactor}
+                                                                                      width={commonData.isEmpty(this.state.questions[this.state.currentQuestion]["imageWidth"])
+                                                                                          ?300
+                                                                                          :this.state.questions[this.state.currentQuestion]["imageWidth"]*dimFactor}
                                                                                       className="roundedImage" alt="i1"/>
                                                                         }
+                                                                        </div>
                                                                     </TableCell>
                                                                 </TableRow>
                                                             </TableBody>

@@ -24,7 +24,7 @@ class Timer extends Component {
             this.setState((prevState) => ({
                 time: prevState.time - 1,
             }), () => {
-                if (this.state.time === 0) {
+                if (this.state.time <= 0) {
                     this.clearTimer();
                     this.props.onTimerEnd();
                 }

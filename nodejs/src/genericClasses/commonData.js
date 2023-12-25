@@ -15,6 +15,7 @@ class commonData extends Component {
     static getApiLink() {
         return this.API_PROTOCOL+"://"+this.API_HOST+":"+this.API_PORT+"/"+this.API_PATH;
     }
+
     static config = {
         timeout: 60000,
         withCredentials: true,
@@ -33,7 +34,13 @@ class commonData extends Component {
         //params: this.username
 
     };
-
+    static isEmpty(value) {
+        if(value===undefined || value===null || value==="") {
+            return true;
+        } else {
+            return false;
+        }
+    }
     static descendingComparator(a, b, orderBy) {
         if (b[orderBy] < a[orderBy]) {
             return -1;

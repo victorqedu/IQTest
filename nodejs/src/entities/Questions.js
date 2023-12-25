@@ -73,7 +73,7 @@ class Questions extends Component {
             numeric: false,
             disablePadding: true,
             label: 'Description',
-            type: 'text',
+            type: 'textarea',
             columnVisible: true,
             size: 'regular',
             editable: true,

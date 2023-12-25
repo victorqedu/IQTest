@@ -28,9 +28,7 @@ class App extends Component {
                 <Route path='/Tests'                        exact={true} element={ <GenericTable config={Tests}/> }/>
                 <Route path='/Subjects'                     exact={true} element={ <GenericTable config={Subjects}/> }/>
                 <Route path='/Images'                       exact={true} element={ <GenericTable config={Images}/> }/>
-
                 <Route path='/TestsSessions'                exact={true} element={ <GenericTable config={TestsSessions}/> }/>
-
                 <Route path='/Questions'                    exact={true} element={ <GenericTable config={Questions}/> }/>
                 <Route path='/QuestionsOptions'             exact={true} element={ <GenericTable config={QuestionsOptions}/> }/>
                 <Route path="/NotFound"                     exact={true} element={ <NotFound/> }/>

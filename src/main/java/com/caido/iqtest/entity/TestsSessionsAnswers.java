@@ -27,8 +27,6 @@ public class TestsSessionsAnswers implements Serializable {
         this.idQuestionsOptions = idQuestionsOptions;
     }
     
-    
-    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id", nullable = false)

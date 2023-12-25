@@ -1,7 +1,9 @@
 package com.caido.iqtest.rest;
 
+import com.caido.iqtest.Services.TestsService;
 import com.caido.iqtest.entity.Subjects;
 import com.caido.iqtest.entity.Tests;
+import com.caido.iqtest.entity.TestsImports;
 import com.caido.iqtest.repositories.TestsRepository;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,11 +30,13 @@ import org.springframework.stereotype.Component;
 @RequestMapping("/api")
 public class TestsController {
     private final TestsRepository repository;
+    private final TestsService service;
     private final TestModelAssembler assembler;
 
-    public TestsController(TestsRepository repository, TestModelAssembler assembler) {
+    public TestsController(TestsRepository repository, TestModelAssembler assembler, TestsService service) {
         this.repository = repository;
         this.assembler = assembler;
+        this.service = service;
     }
 
     @GetMapping("/testsMaxPoints/{id}")
@@ -41,6 +45,11 @@ public class TestsController {
         Tests test = new Tests();
         test.setId(id);
         return repository.getMaxPoints(test);
+    }
+
+    @PostMapping("/importTestFromString")
+    Tests importTestFromString(@RequestBody TestsImports ti) throws Exception  {
+        return service.importTestFromString(ti);
     }
 
     @GetMapping("/tests")

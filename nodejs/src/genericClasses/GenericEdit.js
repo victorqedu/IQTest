@@ -420,20 +420,31 @@ class GenericEdit extends Component {
                                                             <img src={`${this.state.editData[column.id]}`} width={100} sx={{border: 1, padding:"2px"}} alt="..."/>
                                                         </Box>
                                                     </Box>:
+                                                    column.type==="textarea"?
+                                                        <Box>
+                                                            {column.label}{column.mandatory?"*":""}  :<br/>
+                                                            <textarea style={{ width: '100%', height: '100px', resize: 'both' }}
+                                                                id={column.id}
+                                                                onChange={this.handleChange}
+                                                                sx={{width: "100%",resize: "both"}}
+                                                                value={this.state.editData[column.id]||''}/>
+                                                            <br/>
+                                                            <br/>
+                                                        </Box> :
                                                     <Box>
-                                                    {column.label}{column.mandatory?"*":""}  :
-                                                    <TextField
-                                                        id={column.id}
-                                                        //label={column.label}
-                                                        variant="outlined"
-                                                        value={this.state.editData[column.id]||''}
-                                                        onChange={this.handleChange}
-                                                        autoComplete='off'
-                                                        type={column.type==="numeric"?"number":""}
-                                                        sx={{width: "100%"}}/>
-                                                    <br/>
-                                                    <br/>
-                                                </Box> :
+                                                        {column.label}{column.mandatory?"*":""}  :
+                                                        <TextField
+                                                            id={column.id}
+                                                            //label={column.label}
+                                                            variant="outlined"
+                                                            value={this.state.editData[column.id]||''}
+                                                            onChange={this.handleChange}
+                                                            autoComplete='off'
+                                                            type={column.type==="numeric"?"number":""}
+                                                            sx={{width: "100%"}}/>
+                                                        <br/>
+                                                        <br/>
+                                                    </Box> :
                                     <Input
                                         type="hidden"
                                         id={column.id}
