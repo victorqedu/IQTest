@@ -12,6 +12,8 @@ import {Helmet} from "react-helmet";
 import Subjects from "./entities/Subjects";
 import Images from "./entities/Images";
 import TestsSessions from "./entities/TestsSessions";
+import TestsImports from "./entities/TestsImports";
+import GenericEdit from "./genericClasses/GenericEdit";
 
 class App extends Component {
   render() {
@@ -26,6 +28,7 @@ class App extends Component {
                 <Route path='/'                             exact={true} element={ <Home/> }/>
                 <Route path='/Countries'                    exact={true} element={ <GenericTable config={Countries}/> }/>
                 <Route path='/Tests'                        exact={true} element={ <GenericTable config={Tests}/> }/>
+                <Route path='/TestsImports'                 exact={true} element={ <GenericEdit columns={TestsImports.Columns} apiEditName={TestsImports.apiEditName}/> }/>
                 <Route path='/Subjects'                     exact={true} element={ <GenericTable config={Subjects}/> }/>
                 <Route path='/Images'                       exact={true} element={ <GenericTable config={Images}/> }/>
                 <Route path='/TestsSessions'                exact={true} element={ <GenericTable config={TestsSessions}/> }/>

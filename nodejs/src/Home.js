@@ -22,12 +22,16 @@ class Home extends Component {
         this.handleSubmit = this.handleSubmit.bind(this);
         this.shuffleArray = this.shuffleArray.bind(this);
         this.handleMenuClick = this.handleMenuClick.bind(this);
+        this.showContact = this.showContact.bind(this);
         this.state = {
             testId: undefined,
             questions: {},
             subjects: [], // all subjects from the database to be exposed in the main menu
             tests: [], // list with all the tests available for the selected subject from the main menu
         };
+    }
+    async showContact(event) {
+
     }
     async handleMenuClick(event) {
         event.preventDefault();
@@ -125,6 +129,7 @@ class Home extends Component {
                                             {this.state.subjects.map((s, i) => (
                                                 <Button id={s.id} key={s.id} onClick={this.handleMenuClick} sx={{ mx: 2, color: "black" }}>{s.name}</Button>
                                             ))}
+                                            <Button id="contact" key="contact" onClick={this.showContact} sx={{ mx: 2, color: "black" }}>Contact</Button>
                                         </Box>
                                     </Toolbar>
                                 </Container>

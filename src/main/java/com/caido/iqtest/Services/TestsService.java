@@ -9,6 +9,7 @@ import com.caido.iqtest.entity.TestsImports;
 import com.caido.iqtest.repositories.QuestionsOptionsRepository;
 import com.caido.iqtest.repositories.QuestionsRepository;
 import com.caido.iqtest.repositories.TestsRepository;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.transaction.Transactional;
@@ -28,6 +29,12 @@ public class TestsService {
     
     @Transactional
     public Tests importTestFromString(TestsImports ti) throws Exception {
+        if(ti.getTestData()==null) {
+            throw new RootExceptionHandler("Stringul ce contine intrebarile testului nu poate fi null");
+        }
+        if(ti.getResultsData()==null) {
+            throw new RootExceptionHandler("Stringul ce contine rezultatele testului nu poate fi null");
+        }
         String[] linesTest = ti.getTestData().split("\\r?\\n|\\r");
         String[] linesAnswers = ti.getResultsData().split("\\r?\\n|\\r");
         Tests t = new Tests();
@@ -64,41 +71,46 @@ public class TestsService {
             }
             q = questionsR.save(q);
 
-            pattern = Pattern.compile("^[a-d]{1}\\.\\s{0,1}(.{1,});{0,1}\\s{0,1}[a-d]{1}\\.\\s{0,1}(.{1,});{0,1}\\s{0,1}[a-d]{1}\\.\\s{0,1}(.{1,});{0,1}\\s{0,1}[a-d]{1}\\.\\s{0,1}(.{1,})\\.{0,1}$", Pattern.CASE_INSENSITIVE);
+            pattern = Pattern.compile(
+                     "^([a-d]{1})\\.\\s{0,1}(.{1,});{0,1}\\s{0,1}"
+                    + "([a-d]{1})\\.\\s{0,1}(.{1,});{0,1}\\s{0,1}"
+                    + "([a-d]{1})\\.\\s{0,1}(.{1,});{0,1}\\s{0,1}"
+                    + "([a-d]{1})\\.\\s{0,1}(.{1,})\\.{0,1}$", Pattern.CASE_INSENSITIVE);
             matcher = pattern.matcher(linesTest[i+1]);
             System.out.println("options are "+linesTest[i+1]);
             if(matcher.find()) {
+                HashMap answers = new HashMap();
+                
                 System.out.println("options match");
                 QuestionsOptions qo1 = new QuestionsOptions();
                 qo1.setIdQuestions(q);
-                qo1.setDescription(matcher.group(1));
+                qo1.setDescription(matcher.group(2));
                 questionsOptionsR.save(qo1);
+                answers.put(matcher.group(1), qo1);
 
                 QuestionsOptions qo2 = new QuestionsOptions();
                 qo2.setIdQuestions(q);
-                qo2.setDescription(matcher.group(2));
+                qo2.setDescription(matcher.group(4));
                 questionsOptionsR.save(qo2);
+                answers.put(matcher.group(3), qo2);
 
                 QuestionsOptions qo3 = new QuestionsOptions();
                 qo3.setIdQuestions(q);
-                qo3.setDescription(matcher.group(3));
+                qo3.setDescription(matcher.group(6));
                 questionsOptionsR.save(qo3);
+                answers.put(matcher.group(5), qo3);
 
                 QuestionsOptions qo4 = new QuestionsOptions();
                 qo4.setIdQuestions(q);
-                qo4.setDescription(matcher.group(4));
+                qo4.setDescription(matcher.group(8));
                 questionsOptionsR.save(qo4);
+                answers.put(matcher.group(7), qo4);
+                
                 String[] result = linesAnswers[i/2-1].split(" ");
                 String correctAnswerLetter = result[1];
                 String points = result[2];
                 q.setPoints(Integer.valueOf(points));
-                switch (correctAnswerLetter) {
-                    case "a" -> {q.setIdQuestionsOptionsCorrect(qo1);}
-                    case "b" -> {q.setIdQuestionsOptionsCorrect(qo2);}
-                    case "c" -> {q.setIdQuestionsOptionsCorrect(qo3);}
-                    case "d" -> {q.setIdQuestionsOptionsCorrect(qo4);}
-                    default  -> {}
-                }
+                q.setIdQuestionsOptionsCorrect((QuestionsOptions)answers.get(correctAnswerLetter));
                 questionsR.save(q);
             } else {
                 System.out.println("options don't match ");

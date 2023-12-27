@@ -38,7 +38,7 @@ class TestsImports extends Component {
     static DEFAULT_ROWS_PER_PAGE = 5;
     static apiName = "tests";
     static apiDeleteName = "";
-    static apiEditName = "";
+    static apiEditName = "importTestFromString";
     static apiPath = "";
 }
 export default TestsImports;
