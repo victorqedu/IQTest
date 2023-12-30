@@ -2,10 +2,10 @@ package com.caido.iqtest.rest;
 
 import com.caido.iqtest.entity.TestsSessions;
 import com.caido.iqtest.repositories.TestsSessionsRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;

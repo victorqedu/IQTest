@@ -144,7 +144,7 @@ class GenericEdit extends Component {
         //console.log("Posting JSON data :"+JSON.stringify(this.state.editData));
         console.log("Posting JSON data");
         await axios.post(commonData.getApiLink()+this.props.apiEditName,
-            JSON.stringify(this.state.editData), commonData.config)
+            JSON.stringify(this.state.editData), commonData.getConfig())
             .then(
                 res => {
                     //console.log("POST Ret data: "+JSON.stringify(res.data));
@@ -217,7 +217,7 @@ class GenericEdit extends Component {
                     }
                 } else { // old record to be updated
                     axios.put(commonData.getApiLink()+this.props.apiEditName+"/"+this.props.id,
-                        JSON.stringify(this.state.editData), commonData.config)
+                        JSON.stringify(this.state.editData), commonData.getConfig())
                         .then(
                             res => {
                                 console.log("PUT Ret data: "+JSON.stringify(res.data));
@@ -300,7 +300,12 @@ class GenericEdit extends Component {
         let changed=false;
         console.log("Start getAllSelectData");
         for (const col of this.props.columns) {
-            console.log("in getAllSelectData "+col.type+" col name "+col.id);
+            console.log("in getAllSelectData "+col.type+" col name "+col.id+" col.defaultValue "+col.defaultValue);
+            if(col.defaultValue==="connectedUser") {
+                item.editData[col.id] = commonData.connectedUser();
+                console.log("CI is");
+                console.log(item.editData[col.id]);
+            }
             if(col.type==="select") {
                 if(item["selectData"][col.id]===undefined) {
                     let selectOptions = await this.getSelectDataFromApi(col.selectApiName, col.selectApiParameter, col);
@@ -336,7 +341,7 @@ class GenericEdit extends Component {
 
         let rows = undefined;
         console.log("getSelectDataFromApi "+url+" this.state.editData[selectApiParameter] "+this.state.editData[selectApiParameter]+" selectApiName "+selectApiName+" selectApiParameter "+selectApiParameter);
-        await axios.get(url, commonData.config)
+        await axios.get(url, commonData.getConfig())
             .then(res => {
                 //console.log(res.data);
                 rows = res.data["_embedded"][column.selectApiPath];

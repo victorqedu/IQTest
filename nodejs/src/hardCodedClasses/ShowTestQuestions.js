@@ -127,7 +127,7 @@ class ShowTestsQuestions extends Component {
             }
             return "";
         });
-        axios.get(commonData.getApiLink()+"tests/"+this.state.testId, commonData.config)
+        axios.get(commonData.getApiLink()+"tests/"+this.state.testId, commonData.getConfig())
             .then(res => {
                 let item = {...this.state};
                 item.test = res.data;
@@ -174,7 +174,7 @@ class ShowTestsQuestions extends Component {
             item.isAreYouSureOpen = true;
             if(this.state.test.detailedResults===1) { // if not all questions have answers it means that we could have questions for wich we have not yet downloaded the options list and if detailedResults===1 than we willo neede all the options to print them in the final screen
                 for(let i=0;i<this.state.questions.length;i++) {
-                    let data = await commonData.getDataFromApi(QuestionsOptions.apiName, this.state.questions[i]["id"], QuestionsOptions.apiPath);
+                    let data = (await commonData.getDataFromApi(QuestionsOptions.apiName, this.state.questions[i]["id"], QuestionsOptions.apiPath)).data;
                     let item = {...this.state};
                     item.questionsOptions[i] = data;
                     this.setState(item);
@@ -192,7 +192,7 @@ class ShowTestsQuestions extends Component {
      */
     async componentDidMount() {
         console.log("StartcomponentDidMount");
-        let data = await commonData.getDataFromApi(QuestionsOptions.apiName, this.state.questions[0]["id"], QuestionsOptions.apiPath);
+        let data = (await commonData.getDataFromApi(QuestionsOptions.apiName, this.state.questions[0]["id"], QuestionsOptions.apiPath)).data;
         //console.log("ComponentDidMount "+JSON.stringify(item.currentQuestionOptions));
         let item = {...this.state};
         item.currentQuestionOptions = data;
@@ -306,7 +306,7 @@ class ShowTestsQuestions extends Component {
     async randomImage(item, currentQuestion) {
         if(this.state.test.randomImages===1) {
             if(item.questions[currentQuestion]["image"]===undefined || item.questions[currentQuestion]["image"]===null) {
-                item.questions[currentQuestion]["image"] = await commonData.getDataFromApi("getRandomImage", undefined, "image");
+                item.questions[currentQuestion]["image"] = (await commonData.getDataFromApi("getRandomImage", undefined, "image")).data;
                 if(item.questions[currentQuestion]["imageWidth"]===null || item.questions[currentQuestion]["imageWidth"]===undefined) {
                     item.questions[currentQuestion]["imageWidth"] = 400;
                 }
@@ -325,7 +325,7 @@ class ShowTestsQuestions extends Component {
             currentQuestion = nextQuestionIndex;
         }
 
-        let currentQuestionOptions = await commonData.getDataFromApi(QuestionsOptions.apiName, item.questions[currentQuestion]["id"], QuestionsOptions.apiPath);
+        let currentQuestionOptions = (await commonData.getDataFromApi(QuestionsOptions.apiName, item.questions[currentQuestion]["id"], QuestionsOptions.apiPath)).data;
         await this.randomImage(item,currentQuestion);
         console.log("in genericNextQuestion current q font is "+item.questions[currentQuestion]?.fontSize);
         await this.showErrorAndMoveToNextQuestion(item, currentQuestion, currentQuestionOptions);
@@ -561,10 +561,10 @@ class ShowTestsQuestions extends Component {
 
         const handleClose = (editData, success) => {
             if(success) {
-                axios.get(commonData.getApiLink()+"testssessionpoints/"+editData.id, commonData.config)
+                axios.get(commonData.getApiLink()+"testssessionpoints/"+editData.id, commonData.getConfig())
                     .then(res => {
                         let points = res.data;
-                        axios.get(commonData.getApiLink()+"testsMaxPoints/"+this.state.testId, commonData.config)
+                        axios.get(commonData.getApiLink()+"testsMaxPoints/"+this.state.testId, commonData.getConfig())
                             .then(res => {
                                 let maxPoints = res.data;
                                 let item = {...this.state};

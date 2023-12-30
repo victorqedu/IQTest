@@ -64,7 +64,7 @@ class GenericTable extends Component {
         let item = {...this.state};
         item.isAreYouSureDeleteOpened = false;
         if(Number.isInteger(parseInt(this.state.selectedRowId))) {
-            axios.delete(commonData.getApiLink()+this.state.apiDeleteName+"/"+this.state.selectedRowId,commonData.config)
+            axios.delete(commonData.getApiLink()+this.state.apiDeleteName+"/"+this.state.selectedRowId,commonData.getConfig())
                 .then(() =>{
                     console.log('Record Deleted successfully for ID '+item.selectedRowId);
                     for (let i = 0; i < item.rows.length; i++) {
@@ -115,7 +115,7 @@ class GenericTable extends Component {
         }
         item.selectedRowId = undefined;
         console.log("getDataFromApi "+url);
-        axios.get(url, commonData.config)
+        axios.get(url, commonData.getConfig())
             .then(res => {
                 //console.log(res.data);
                 item.rows = res.data["_embedded"][this.state.apiPath];

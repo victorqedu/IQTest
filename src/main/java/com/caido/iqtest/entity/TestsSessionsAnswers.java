@@ -1,17 +1,16 @@
 package com.caido.iqtest.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.sun.istack.NotNull;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.io.Serializable;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 
 @Entity
 @Table(name="tests_sessions_answers")
@@ -40,8 +39,7 @@ public class TestsSessionsAnswers implements Serializable {
 
     @JsonBackReference
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="id_tests_sessions")
-    @NotNull
+    @JoinColumn(name="id_tests_sessions", nullable=false)
     private TestsSessions idTestsSessions;
     public TestsSessions getIdTestsSessions() {
         return idTestsSessions;
@@ -51,8 +49,7 @@ public class TestsSessionsAnswers implements Serializable {
     }
 
     @ManyToOne
-    @JoinColumn(name="id_questions")
-    @NotNull
+    @JoinColumn(name="id_questions", nullable=false)
     private Questions idQuestions;
     public Questions getIdQuestions() {
         return idQuestions;
@@ -62,8 +59,7 @@ public class TestsSessionsAnswers implements Serializable {
     }
     
     @ManyToOne
-    @JoinColumn(name="id_questions_options")
-    @NotNull
+    @JoinColumn(name="id_questions_options", nullable=false)
     private QuestionsOptions idQuestionsOptions;
     public QuestionsOptions getIdQuestionsOptions() {
         return idQuestionsOptions;

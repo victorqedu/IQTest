@@ -3,8 +3,8 @@ import {
     AppBar,
     Box,
     Button,
-    Container,
-    Input,
+    Container, IconButton,
+    Input, Menu, MenuItem,
     Toolbar,
 } from "@mui/material";
 import {Form} from "reactstrap";
@@ -15,6 +15,9 @@ import bg from './images/bg3.jpg';
 import { Helmet } from 'react-helmet';
 import './App.css';
 import Subjects from "./entities/Subjects";
+import Contact from "./hardCodedClasses/Contact";
+import Login from "./hardCodedClasses/Login";
+import {AccountCircle} from "@mui/icons-material";
 
 class Home extends Component {
     constructor(props) {
@@ -22,33 +25,73 @@ class Home extends Component {
         this.handleSubmit = this.handleSubmit.bind(this);
         this.shuffleArray = this.shuffleArray.bind(this);
         this.handleMenuClick = this.handleMenuClick.bind(this);
-        this.showContact = this.showContact.bind(this);
+        this.handleAccountButtonClick = this.handleAccountButtonClick.bind(this);
+        this.handleAccountClose = this.handleAccountClose.bind(this);
+        this.updateConnectedState = this.updateConnectedState.bind(this);
+
         this.state = {
             testId: undefined,
+            action: undefined,
             questions: {},
             subjects: [], // all subjects from the database to be exposed in the main menu
             tests: [], // list with all the tests available for the selected subject from the main menu
+            anchorEl: null,
+            connected: commonData.connected(),
         };
     }
-    async showContact(event) {
 
+    updateConnectedState(connected) {
+        let item = {...this.state};
+        item.connected = connected;
+        this.setState(item);
     }
+    handleAccountButtonClick(event) {
+        let item = {...this.state};
+        item.anchorEl = event.currentTarget;
+        this.setState(item);
+    }
+
+    handleAccountClose(event) {
+        let item = {...this.state};
+        item.anchorEl = null;
+        //console.log("event name: "+event.currentTarget.id);
+        let action = event.currentTarget.id;
+        if(action==="accountExit") {
+            item.connected = false;
+            item.action = "";
+            commonData.logout();
+        }
+        this.setState(item);
+    }
+
     async handleMenuClick(event) {
         event.preventDefault();
         let idSubject = event.currentTarget.id;
         let item = {...this.state};
-        item.tests = await commonData.getDataFromApi("testsWithSubjectId", idSubject, "testsList");
-        item.anchorEl = event.currentTarget;
-        console.log("tests are");
-        console.log(item.tests);
+        if(idSubject==="login" || idSubject==="contact") {
+            item.action = idSubject;
+            item.tests = undefined;
+        } else {
+            item.tests = (await commonData.getDataFromApi("testsWithSubjectId", idSubject, "testsList")).data;
+            item.anchorEl = event.currentTarget;
+            console.log("tests are");
+            console.log(item.tests);
+        }
         this.setState(item);
-        console.log("Handle click");
     }
 
     componentDidMount() {
         commonData.getDataFromApi(Subjects.apiName, undefined, Subjects.apiPath)
-            .then(subjectsData => {
-                this.setState({ subjects: subjectsData });
+            .then(response => {
+                console.log(response);
+                if(response.success) {
+                    this.setState({ subjects: response.data });
+                } else {
+                    if(response.status===401) {
+                        console.log("login");
+                        this.setState({ connected: false, action: "login" });
+                    }
+                }
             })
             .catch(error => {
                 console.error('Error fetching subjects:', error);
@@ -69,7 +112,7 @@ class Home extends Component {
         if(testId!==undefined && testId!=null && testId!=="") {
             let item = {...this.state};
             item.testId = testId;
-            item.questions = await commonData.getDataFromApi(Questions.apiName, testId, Questions.apiPath);
+            item.questions = (await commonData.getDataFromApi(Questions.apiName, testId, Questions.apiPath)).data;
             console.log(item.questions[0].orderq);
             if(item.questions[0].orderq===null) {
                 console.log("Shuffling");
@@ -84,9 +127,10 @@ class Home extends Component {
     }
 
     render() {
-        if(this.state.subjects===undefined) {
-            return "Loading...";
-        }
+        /*console.log("action "+this.state.action);
+        this.state.tests && console.log("tests are defined");
+        console.log(this.state.tests);*/
+
         const formStyle = { marginBottom: "5px" }; // Adjust the margin as needed
         const buttonStyle = {
             width: '200px',
@@ -126,10 +170,40 @@ class Home extends Component {
                                 <Container maxWidth="xl">
                                     <Toolbar disableGutters>
                                         <Box sx={{ flexGrow: 1 }}>
+                                            {
+                                                !this.state.connected
+                                                    && <Button id="login" key="login" onClick={this.handleMenuClick} sx={{ mx: 2, color: "black" }}>Conectare</Button>
+                                            }
                                             {this.state.subjects.map((s, i) => (
                                                 <Button id={s.id} key={s.id} onClick={this.handleMenuClick} sx={{ mx: 2, color: "black" }}>{s.name}</Button>
                                             ))}
-                                            <Button id="contact" key="contact" onClick={this.showContact} sx={{ mx: 2, color: "black" }}>Contact</Button>
+                                            <Button id="contact" key="contact" onClick={this.handleMenuClick} sx={{ mx: 2, color: "black" }}>Contact</Button>
+                                            {
+                                                this.state.connected
+                                                    &&
+                                                    <>
+                                                        <IconButton size="small"
+                                                                    id="basic-button"
+                                                                    aria-controls={Boolean(this.state.anchorEl) ? 'basic-menu' : undefined}
+                                                                    aria-haspopup="true"
+                                                                    aria-expanded={Boolean(this.state.anchorEl) ? 'true' : undefined}
+                                                                    onClick={this.handleAccountButtonClick}>
+                                                            <AccountCircle />
+                                                        </IconButton>
+
+                                                        <Menu
+                                                            id="demo-positioned-menu"
+                                                            aria-labelledby="demo-positioned-button"
+                                                            anchorEl={this.state.anchorEl}
+                                                            open={Boolean(this.state.anchorEl)}
+                                                            onClose={this.handleAccountClose}
+                                                        >
+                                                            <MenuItem id="accountTests" onClick={this.handleAccountClose}>Testele mele</MenuItem>
+                                                            <MenuItem id="accountSettings" onClick={this.handleAccountClose}>Setări cont</MenuItem>
+                                                            <MenuItem id="accountExit" onClick={this.handleAccountClose}>Ieșire</MenuItem>
+                                                        </Menu>
+                                                    </>
+                                            }
                                         </Box>
                                     </Toolbar>
                                 </Container>
@@ -138,15 +212,23 @@ class Home extends Component {
 
                         <Box id="box2" display="flex" flexDirection="column" justifyContent="flex-start"
                              alignItems="center" marginTop={10}>
-                            {this.state.tests?.map((t, i) => {
-                                return (<div key={"testID" + t.id} style={formStyle}>
-                                    <Form onSubmit={this.handleSubmit} style={formStyle}>
-                                        <Input type="hidden" name="test_id" id="test_id" value={t.id}/>
-                                        <Button variant="outlined" type="submit" className="glowing-text-button"
-                                                style={buttonStyle}>{t.description}</Button>
-                                    </Form>
-                                </div>);
-                            })}
+                            {
+                                (this.state.tests && this.state.tests.length>0)
+                                    ?this.state.tests.map((t, i) => {
+                                            return (<div key={"testID" + t.id} style={formStyle}>
+                                                <Form onSubmit={this.handleSubmit} style={formStyle}>
+                                                    <Input type="hidden" name="test_id" id="test_id" value={t.id}/>
+                                                    <Button variant="outlined" type="submit" className="glowing-text-button"
+                                                            style={buttonStyle}>{t.description}</Button>
+                                                </Form>
+                                            </div>);
+                                        })
+                                    :this.state.action==="login"
+                                        ?<Login updateConnectedState={this.updateConnectedState}/>
+                                        :this.state.action==="contact"
+                                            ?<Contact/>
+                                            :""
+                            }
                         </Box>
                     </Box>
 

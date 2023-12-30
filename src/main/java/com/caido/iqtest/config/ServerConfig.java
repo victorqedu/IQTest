@@ -1,4 +1,4 @@
-package com.caido.iqtest;
+package com.caido.iqtest.config;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.connector.Connector;

@@ -9,10 +9,10 @@ import com.caido.iqtest.entity.TestsImports;
 import com.caido.iqtest.repositories.QuestionsOptionsRepository;
 import com.caido.iqtest.repositories.QuestionsRepository;
 import com.caido.iqtest.repositories.TestsRepository;
+import jakarta.transaction.Transactional;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 @Service

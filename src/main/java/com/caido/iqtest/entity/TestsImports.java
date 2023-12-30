@@ -1,8 +1,8 @@
 package com.caido.iqtest.entity;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import java.io.Serializable;
-import javax.persistence.Entity;
-import javax.persistence.Id;
 
 @Entity
 public class TestsImports implements Serializable {

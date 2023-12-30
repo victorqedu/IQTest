@@ -1,16 +1,16 @@
+
 package com.caido.iqtest.entity;
 
-import com.sun.istack.NotNull;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.io.Serializable;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 
 @Entity
 @Table(name="tests")
@@ -52,8 +52,7 @@ public class Tests implements Serializable {
         this.resultsText = resultsText;
     }
         
-    @Column(name="description")
-    @NotNull
+    @Column(name="description", nullable=false)
     private String description;
     public String getDescription() {
         return description;
@@ -90,8 +89,7 @@ public class Tests implements Serializable {
     }
     
     @ManyToOne(cascade = {CascadeType.DETACH})
-    @JoinColumn(name="id_subjects")
-    @NotNull
+    @JoinColumn(name="id_subjects", nullable=false)
     private Subjects idSubjects;
     public Subjects getIdSubjects() {
         return idSubjects;

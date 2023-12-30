@@ -1,8 +1,8 @@
 package com.caido.iqtest.repositories;
 
 import com.caido.iqtest.entity.Images;
+import jakarta.transaction.Transactional;
 import java.util.List;
-import javax.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

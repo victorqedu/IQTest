@@ -14,6 +14,7 @@ import Images from "./entities/Images";
 import TestsSessions from "./entities/TestsSessions";
 import TestsImports from "./entities/TestsImports";
 import GenericEdit from "./genericClasses/GenericEdit";
+import Login from "./hardCodedClasses/Login";
 
 class App extends Component {
   render() {
@@ -26,6 +27,7 @@ class App extends Component {
               </Helmet>
               <Routes>
                 <Route path='/'                             exact={true} element={ <Home/> }/>
+                <Route path='/Login'                        exact={true} element={ <Login/> }/>
                 <Route path='/Countries'                    exact={true} element={ <GenericTable config={Countries}/> }/>
                 <Route path='/Tests'                        exact={true} element={ <GenericTable config={Tests}/> }/>
                 <Route path='/TestsImports'                 exact={true} element={ <GenericEdit columns={TestsImports.Columns} apiEditName={TestsImports.apiEditName}/> }/>

@@ -78,6 +78,24 @@ class TestsSessions extends Component {
             notNull: true,
             mandatory: true,
         },
+        {
+            id: 'idUsers',
+            numeric: true,
+            disablePadding: false,
+            label: 'Utilizator',
+            type: 'select',
+            selectApiName: "users",
+            selectApiParameter: undefined, // the name of the column from the current object that will be used in the selectApiName query
+            selectApiPath: "usersList",
+            selectApiColumnName: "username",
+            selectApiColumnType: "text",
+            columnVisible: true,
+            size: 'regular',
+            editable: false,
+            notNull: true,
+            mandatory: false,
+            defaultValue: "connectedUser",
+        },
     ];
     static DEFAULT_ORDER = 'asc';
     static DEFAULT_ORDER_BY = 'name';

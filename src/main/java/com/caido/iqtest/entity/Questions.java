@@ -1,18 +1,17 @@
 package com.caido.iqtest.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.sun.istack.NotNull;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.io.Serializable;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 
 @Entity
 @Table(name="questions")
@@ -44,8 +43,7 @@ public class Questions implements Serializable {
             this.id = id;
     }
         
-    @Column(name="description")
-    @NotNull
+    @Column(name="description", nullable=false)
     private String description;
     public String getDescription() {
             return description;
@@ -56,8 +54,7 @@ public class Questions implements Serializable {
 
     @JsonIgnoreProperties("idQuestions")
     @ManyToOne(cascade = {CascadeType.DETACH})
-    @JoinColumn(name="id_questions_options_correct")
-    @NotNull
+    @JoinColumn(name="id_questions_options_correct", nullable=false)
     private QuestionsOptions idQuestionsOptionsCorrect;
     public QuestionsOptions getIdQuestionsOptionsCorrect() {
         return idQuestionsOptionsCorrect;
@@ -67,8 +64,7 @@ public class Questions implements Serializable {
     }
 
     @ManyToOne(cascade = {CascadeType.DETACH})
-    @JoinColumn(name="id_tests")
-    @NotNull
+    @JoinColumn(name="id_tests", nullable=false)
     private Tests idTests;
     public Tests getIdTests() {
         return idTests;

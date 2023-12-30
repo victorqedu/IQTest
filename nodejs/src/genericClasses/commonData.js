@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import {createTheme, styled, TableCell, tableCellClasses} from "@mui/material";
 import axios from "axios";
+import {jwtDecode} from "jwt-decode";
 /*import { ThemeProvider, createMuiTheme, makeStyles } from '@material-ui/core/styles';*/
 
 class commonData extends Component {
@@ -16,24 +17,64 @@ class commonData extends Component {
         return this.API_PROTOCOL+"://"+this.API_HOST+":"+this.API_PORT+"/"+this.API_PATH;
     }
 
-    static config = {
-        timeout: 60000,
-        withCredentials: true,
-        //withCredentials: false,
-        headers: {
-            "Accept": "*/*",
-            "Content-Type": "application/json",
-            //"Authorization": +this.basicAuth,
-//            credentials: 'same-origin',
-        },
-        //mode: 'no-cors',
-/*        auth: {
-            username: "victor",
-            password: "test",
-        },*/
-        //params: this.username
+    static connected() {
+        const connectedUserData = localStorage.getItem('connectedUserData');
+        console.log("connected "+localStorage.getItem('connectedUserData')+" connectedUserData "+connectedUserData);
+        return !commonData.isEmpty(connectedUserData);
+    }
 
-    };
+    static connectedUserName() {
+        if(!commonData.isEmpty(localStorage.getItem('connectedUserData'))) {
+            let userData = JSON.parse(localStorage.getItem('connectedUserData'));
+            return userData.name;
+        }
+    }
+
+    static connectedUserId() {
+        if(!commonData.isEmpty(localStorage.getItem('connectedUserData'))) {
+            let userData = JSON.parse(localStorage.getItem('connectedUserData'));
+            return userData.id;
+        }
+    }
+
+    static connectedUser() {
+        if(!commonData.isEmpty(localStorage.getItem('connectedUserData'))) {
+            let userData = JSON.parse(localStorage.getItem('connectedUserData'));
+            return userData;
+        }
+    }
+
+    static logout() {
+        localStorage.removeItem('connectedUserData');
+        localStorage.removeItem('jwtToken');
+    }
+
+    static getConfig() {
+        let config =  {
+            timeout: 60000,
+            //withCredentials: true,
+            //withCredentials: false,
+            headers: {
+                "Accept": "*/*",
+                "Content-Type": "application/json",
+                "observe": 'response',
+                //"Authorization": "",
+//            credentials: 'same-origin',
+            },
+            //mode: 'no-cors',
+            /*        auth: {
+                        username: "victor",
+                        password: "test",
+                    },*/
+            //params: this.username
+        }
+        //console.log("jwtToken "+jwtToken);
+        const jwtToken = localStorage.getItem('jwtToken');
+        if(!commonData.checkJWTokenExpired()) {
+            config.headers["Authorization"] = jwtToken;
+        }
+        return config;
+    }
     static isEmpty(value) {
         if(value===undefined || value===null || value==="") {
             return true;
@@ -174,30 +215,65 @@ class commonData extends Component {
         return message;
     }
 
+    static checkJWTokenExpired() {
+        let jwtToken = localStorage.getItem('jwtToken');
+        if(commonData.isEmpty(jwtToken)) {
+            return true;
+        } else if(jwtToken.startsWith("Basic")) { // this is no JWT toke, is the initial basic auth
+            return false;
+        } else {
+            const decodedToken = jwtDecode(jwtToken);
+            // Check if the token is expired
+            if (decodedToken.exp < Date.now() / 1000) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
     static async getDataFromApi(apiName, filterParameter, apiPath) {
         console.log("Start getDataFromApi "+apiPath);
         let url = this.getApiLink()+apiName;
         if(filterParameter!==undefined) {
             url+="/"+filterParameter;
         }
-        let data;
-        await axios.get(url, commonData.config)
+        return await axios.get(url, commonData.getConfig())
             .then(res => {
+                let data;
                 if(res.data["_embedded"]!==undefined) {
-                    //console.log("_embedded is defined");
+                    console.log("_embedded is defined");
                     data = res.data["_embedded"][apiPath];
                 } else {
-                    //console.log("_embedded is undefined");
+                    console.log("_embedded is undefined");
                     data = res.data[apiPath];
-                    //console.log("data is "+data);
                 }
+                console.log("data is "+data);
+                return {data: data, status:200, success: true};
                 //console.log(res);
             })
             .catch(error => {
-                console.log("Error is"+error);
+                console.log("Error is "+error);
+                if (error.response) {
+                    // The request was made and the server responded with a status code
+                    // that falls out of the range of 2xx
+                    console.log("Response data:", error.response);
+                    console.log("response.status "+error.response.status);
+                    if(error.response.status===401) {
+                        commonData.logout();
+                    }
+                    return {data: null, status:error.response.status, success: false, error: error.response.data};
+                } else if (error.request) {
+                    // The request was made but no response was received
+                    console.log("No response received:", error.request);
+                    return {data: null, status:null, success: false, error: error.request};
+                } else {
+                    // Something happened in setting up the request that triggered an Error
+                    console.log("Error during request setup:", error.message);
+                    return {data: null, status:null, success: false, error: error.message};
+                }
+
             });
-        //console.log("end getDataFromApi data.length : "+data.length);
-        return data;
     }
 
 }

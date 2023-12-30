@@ -1,23 +1,23 @@
 package com.caido.iqtest.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.sun.istack.NotNull;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 @Entity
 @Table(name="tests_sessions")
@@ -57,8 +57,7 @@ public class TestsSessions implements Serializable {
             this.name = name;
     }
     
-    @Column(name="ip_address")
-    @NotNull
+    @Column(name="ip_address", nullable=false)
     private String ipAddress;
     public String getIpAddress() {
             return ipAddress;
@@ -67,8 +66,7 @@ public class TestsSessions implements Serializable {
             this.ipAddress = ipAddress;
     }
 
-    @Column(name="age")
-    @NotNull
+    @Column(name="age", nullable=false)
     private Integer age;
     public Integer getAge() {
         return age;
@@ -77,8 +75,7 @@ public class TestsSessions implements Serializable {
         this.age = age;
     }
     
-    @NotNull
-    @Column(name="test_date")
+    @Column(name="test_date", nullable=false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date testDate;
     public Date getDate() {
@@ -89,8 +86,7 @@ public class TestsSessions implements Serializable {
     }
 
     @ManyToOne
-    @JoinColumn(name="id_sex")
-    @NotNull
+    @JoinColumn(name="id_sex", nullable=false)
     private Sex idSex;
     public Sex getIdSex() {
         return idSex;
@@ -100,8 +96,17 @@ public class TestsSessions implements Serializable {
     }
     
     @ManyToOne
-    @JoinColumn(name="id_tests")
-    @NotNull
+    @JoinColumn(name="id_users")
+    private Users idUsers;
+    public Users getIdUsers() {
+        return idUsers;
+    }
+    public void setIdUsers(Users idUsers) {
+        this.idUsers = idUsers;
+    }
+    
+    @ManyToOne
+    @JoinColumn(name="id_tests", nullable=false)
     private Tests idTests;
     public Tests getIdTests() {
         return idTests;
@@ -116,7 +121,7 @@ public class TestsSessions implements Serializable {
     public List<TestsSessionsAnswers> getTestsSessionsAnswers() {
         return testsSessionsAnswers;
     }
-    public void setPersonIdrh(List<TestsSessionsAnswers> testsSessionsAnswers) {
+    public void setTestsSessionsAnswers(List<TestsSessionsAnswers> testsSessionsAnswers) {
         this.testsSessionsAnswers = testsSessionsAnswers;
     }
 
