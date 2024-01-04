@@ -1,6 +1,5 @@
 package com.caido.iqtest.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -13,10 +12,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -26,7 +23,7 @@ public class TestsSessions implements Serializable {
     public TestsSessions() {
     }
 
-    public TestsSessions(Long id, String name, String ipAddress, Integer age, Date testDate, Sex idSex, Tests idTests) {
+    public TestsSessions(Long id, String name, String ipAddress, Integer age, LocalDateTime testDate, Sex idSex, Tests idTests) {
         this.id = id;
         this.name = name;
         this.ipAddress = ipAddress;
@@ -76,12 +73,11 @@ public class TestsSessions implements Serializable {
     }
     
     @Column(name="test_date", nullable=false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date testDate;
-    public Date getDate() {
+    private LocalDateTime testDate;
+    public LocalDateTime getDate() {
         return testDate;
     }
-    public void setDate(Date testDate) {
+    public void setDate(LocalDateTime testDate) {
         this.testDate = testDate;
     }
 
@@ -124,6 +120,4 @@ public class TestsSessions implements Serializable {
     public void setTestsSessionsAnswers(List<TestsSessionsAnswers> testsSessionsAnswers) {
         this.testsSessionsAnswers = testsSessionsAnswers;
     }
-
-    
 }

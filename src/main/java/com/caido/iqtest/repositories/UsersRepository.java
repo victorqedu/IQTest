@@ -12,6 +12,6 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
     @Transactional
     List<Users> findAll();
 
-    @Query("SELECT p FROM Users p WHERE p.username = ?1")
+    @Query("SELECT p FROM Users p WHERE lower(p.username) = lower(?1)")
     public Users findByEmail(String email);
 }

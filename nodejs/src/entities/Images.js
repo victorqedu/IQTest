@@ -29,5 +29,6 @@ class Images extends Component {
     static apiEditName = "images";
     static apiDeleteName = "images";
     static apiPath = "imagesList";
+    static allowEditing = true;
 }
 export default Images;

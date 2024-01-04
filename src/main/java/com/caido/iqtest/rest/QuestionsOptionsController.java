@@ -4,6 +4,8 @@ import com.caido.iqtest.entity.Questions;
 import com.caido.iqtest.entity.QuestionsOptions;
 import com.caido.iqtest.repositories.QuestionsOptionsRepository;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -56,12 +58,15 @@ public class QuestionsOptionsController {
         return assembler.toModel(c);
     }
 
-    @GetMapping("/questionsoptions_findByQuestionId/{idQuestions}")
-    CollectionModel<EntityModel<QuestionsOptions>>  findByQuestionId(@PathVariable Long idQuestions) {
+    @GetMapping("/questionsoptions_findByQuestionId/{idQuestion}")
+    CollectionModel<EntityModel<QuestionsOptions>>  findByQuestionId(@PathVariable Long idQuestion) {
         System.out.println("Start findByQuestionId");
-        Questions q = new Questions();
-        q.setId(idQuestions);
-        List<EntityModel<QuestionsOptions>> c = repository.findByQuestionId(q).stream() 
+//        try {
+//            Thread.sleep(5000);
+//        } catch (InterruptedException ex) {
+//            Logger.getLogger(QuestionsOptionsController.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+        List<EntityModel<QuestionsOptions>> c = repository.findByQuestionId(idQuestion).stream() 
             .map(assembler::toModel) 
             .collect(Collectors.toList());
         return CollectionModel.of(c, linkTo(methodOn(QuestionsOptionsController.class).getAll()).withSelfRel());
@@ -80,7 +85,7 @@ public class QuestionsOptionsController {
 
 class QuestionOptionNotFoundException extends RuntimeException {
     QuestionOptionNotFoundException(Long id) {
-        super("Could not find test  with id " + id);
+        super("Could not find question option with id " + id);
     }
 }
 

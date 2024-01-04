@@ -49,6 +49,23 @@ class Tests extends Component {
             editable: true,
         },
         {
+            id: 'idGroups',
+            numeric: true,
+            disablePadding: false,
+            label: 'Group',
+            type: 'select',
+            selectApiName: "groups",
+            selectApiParameter: "", // the name of the column from the current object that will be used in the selectApiName query
+            selectApiPath: "groupsList",
+            selectApiColumnName: "name",
+            selectApiColumnType: "text",
+            selectApiColumnNameBackup: "name",
+            selectApiColumnTypeBackup: "text",
+            columnVisible: true,
+            size: 'regular',
+            editable: true,
+        },
+        {
             id: 'detailedResults',
             numeric: true,
             disablePadding: false,
@@ -137,5 +154,6 @@ class Tests extends Component {
     static apiDeleteName = "tests";
     static apiEditName = "tests";
     static apiPath = "testsList";
+    static allowEditing = true;
 }
 export default Tests;

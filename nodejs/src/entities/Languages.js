@@ -39,5 +39,6 @@ class Languages extends Component {
     static apiEditName = "languages";
     static apiDeleteName = "languages";
     static apiPath = "languagesList";
+    static allowEditing = true;
 }
 export default Languages;

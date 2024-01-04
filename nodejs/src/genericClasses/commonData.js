@@ -19,7 +19,7 @@ class commonData extends Component {
 
     static connected() {
         const connectedUserData = localStorage.getItem('connectedUserData');
-        console.log("connected "+localStorage.getItem('connectedUserData')+" connectedUserData "+connectedUserData);
+        //console.log("connected "+localStorage.getItem('connectedUserData')+" connectedUserData "+connectedUserData);
         return !commonData.isEmpty(connectedUserData);
     }
 
@@ -27,6 +27,13 @@ class commonData extends Component {
         if(!commonData.isEmpty(localStorage.getItem('connectedUserData'))) {
             let userData = JSON.parse(localStorage.getItem('connectedUserData'));
             return userData.name;
+        }
+    }
+
+    static connectedUserRole() {
+        if(!commonData.isEmpty(localStorage.getItem('connectedUserData'))) {
+            let userData = JSON.parse(localStorage.getItem('connectedUserData'));
+            return userData.role;
         }
     }
 
@@ -52,23 +59,12 @@ class commonData extends Component {
     static getConfig() {
         let config =  {
             timeout: 60000,
-            //withCredentials: true,
-            //withCredentials: false,
             headers: {
                 "Accept": "*/*",
                 "Content-Type": "application/json",
                 "observe": 'response',
-                //"Authorization": "",
-//            credentials: 'same-origin',
             },
-            //mode: 'no-cors',
-            /*        auth: {
-                        username: "victor",
-                        password: "test",
-                    },*/
-            //params: this.username
         }
-        //console.log("jwtToken "+jwtToken);
         const jwtToken = localStorage.getItem('jwtToken');
         if(!commonData.checkJWTokenExpired()) {
             config.headers["Authorization"] = jwtToken;
@@ -110,50 +106,13 @@ class commonData extends Component {
         return stabilizedThis.map((el) => el[0]);
     }
 
-  /*  static StyledTable = styled(Table)(({ theme }) => ({
-        "& .MuiTableCell-root": {
-            border: '0px solid black',
-            "borderBottom": '1px solid #aaaaaa',
-            "tableLayout": 'fixed',
-        },
-        "& .Mui-selected": {
-            backgroundColor: "#FF0000",
-        },
-        "& .MuiTableRow-hover": {
-            backgroundColor: "#FF0000",
-        },
-        /!*"&$tableRowSelected, &$tableRowSelected:hover": {
-            backgroundColor: "#FF0000"
-        },*!/
-    }));*/
-
-    /*static StyledTableRow = styled(TableRow)(({ theme }) => ({
-/!*
-        '&:nth-of-type(odd)': {
-            /!*backgroundColor: theme.palette.action.hover,*!/
-            /!*backgroundColor: "#FF0000",*!/
-        },
-*!/
-        "& .MuiTableRow-root": {
-            backgroundColor: "#FF0000",
-        },
-        "& .Mui-selected": {
-            backgroundColor: "#FF0000",
-        },
-        "& .MuiTableRow-hover": {
-            backgroundColor: "#FF0000",
-        },
-    }));
-*/
     static StyledTableCell = styled(TableCell)(({ theme }) => ({
         [`&.${tableCellClasses.head}`]: {
             //backgroundColor: theme.palette.common.black,
             //backgroundColor: "#6d6b6a",
-            backgroundColor: "#736FF7",
+            backgroundColor: "#eddfce",
             //backgroundColor: "#F76F73",
-            color: theme.palette.common.white,
-            //"&:hover":{color: "white"},
-            //"&:active":{color: "white"},
+            color: theme.palette.common.black,
         },
         [`&.${tableCellClasses.body}`]: {
             fontSize: 14,
@@ -163,8 +122,8 @@ class commonData extends Component {
 
     static StyledSmallTableCell = styled(TableCell)(({ theme }) => ({
         [`&.${tableCellClasses.head}`]: {
-            backgroundColor: "#736FF7",
-            color: theme.palette.common.white,
+            backgroundColor: "#eddfce",
+            color: theme.palette.common.black,
             fontSize: 14,
             width: '50px',
             maxWidth: '50px',
@@ -232,6 +191,25 @@ class commonData extends Component {
         }
     }
 
+    static formatDatetime(dateTimeString) {
+        // Parse the input dateTimeString string
+        const dateTime = new Date(dateTimeString);
+
+        // Get the date components
+        const year = dateTime.getFullYear();
+        const month = (dateTime.getMonth() + 1).toString().padStart(2, '0');
+        const day = dateTime.getDate().toString().padStart(2, '0');
+
+        // Get the time components
+        const hours = dateTime.getHours().toString().padStart(2, '0');
+        const minutes = dateTime.getMinutes().toString().padStart(2, '0');
+
+        // Construct the formatted string
+        const formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}`;
+
+        return formattedDateTime;
+    }
+
     static async getDataFromApi(apiName, filterParameter, apiPath) {
         console.log("Start getDataFromApi "+apiPath);
         let url = this.getApiLink()+apiName;
@@ -240,15 +218,22 @@ class commonData extends Component {
         }
         return await axios.get(url, commonData.getConfig())
             .then(res => {
+                console.log("data");
+                //console.log(res);
+                //console.log(res["data"]);
+                //console.log(res["data"]["_embedded"]);
+                //console.log("Content-Type:", res.headers["content-type"]);
+
+
                 let data;
-                if(res.data["_embedded"]!==undefined) {
+                if(res["data"]["_embedded"]!==undefined) {
                     console.log("_embedded is defined");
-                    data = res.data["_embedded"][apiPath];
+                    data = res["data"]["_embedded"][apiPath];
                 } else {
                     console.log("_embedded is undefined");
-                    data = res.data[apiPath];
+                    data = res["data"][apiPath];
                 }
-                console.log("data is "+data);
+                //console.log("data is "+data);
                 return {data: data, status:200, success: true};
                 //console.log(res);
             })
@@ -259,7 +244,7 @@ class commonData extends Component {
                     // that falls out of the range of 2xx
                     console.log("Response data:", error.response);
                     console.log("response.status "+error.response.status);
-                    if(error.response.status===401) {
+                    if(error.response.status===401 || error.response.status===403) {
                         commonData.logout();
                     }
                     return {data: null, status:error.response.status, success: false, error: error.response.data};

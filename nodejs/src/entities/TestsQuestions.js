@@ -60,5 +60,6 @@ class TestsQuestions extends Component {
     static apiEditName = "testsquestions";
     static apiDeleteName = "testsquestions";
     static apiPath = "testsquestionsList";
+    static allowEditing = true;
 }
 export default TestsQuestions;

@@ -42,25 +42,25 @@ public class Users implements Serializable  {
     @Column(name="name", nullable=false)
     private String name;
     public String getName() {
-            return name;
+        return name;
     }
     public void setName(String name) {
-            this.name = name;
+        this.name = name;
     }
 
     @Column(name="username", nullable=false)
     private String username;
     public String getUsername() {
-            return username;
+        return username;
     }
     public void setUsername(String username) {
-            this.username = username;
+        this.username = username;
     }
 
     @Column(name="password", nullable=false)
     private String password;
     public String getPassword() {
-            return null;
+        return null;
     }
     @JsonIgnore
     public String getPasswordReal() {
@@ -68,7 +68,7 @@ public class Users implements Serializable  {
     }
     
     public void setPassword(String password) {
-            this.password = password;
+        this.password = password;
     }
 
     @Column(name="suspended", nullable=false)
@@ -143,6 +143,15 @@ public class Users implements Serializable  {
     }
     public void setPhone(String phone) {
             this.phone = phone;
+    }
+
+    @Column(name="role")
+    private String role;
+    public String getRole() {
+            return role;
+    }
+    public void setRole(String role) {
+            this.role = role;
     }
 
     @Override

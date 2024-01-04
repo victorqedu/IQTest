@@ -2,8 +2,7 @@ import React, {Component} from 'react';
 import axios from "axios";
 import {
     Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-    FormControlLabel,
-    Paper, Switch, Tab, Table,
+    Paper, Tab, Table,
     TableBody, TableCell,
     TableContainer,
     TablePagination, TableRow, Tabs, ThemeProvider, Typography,
@@ -33,6 +32,7 @@ class GenericTable extends Component {
         this.handleTabChange = this.handleTabChange.bind(this);
         this.checkReadyToShowData = this.checkReadyToShowData.bind(this);
         this.getDataFromApi = this.getDataFromApi.bind(this);
+        //console.log("GenericTable constructor for "+ this.props.config.apiName);
 
         this.state = {
             rows: [],// all the rows available
@@ -47,11 +47,12 @@ class GenericTable extends Component {
             isAreYouSureDeleteOpened: false, // the popup for confirming the deletion of a record
             isInfoDialogOpened: false, // the info dialog
             infoDialogMessage: undefined, // the message displayed in the info dialog
-            apiName: this.props.config.apiName, // the name used to access the api eg: http://caido.ro:8080/api/<apiName>/ in order to retrieve the list of rows used to show in the table form
+            apiName: this.props.customApiName?this.props.customApiName:this.props.config.apiName, // the name used to access the api eg: http://caido.ro:8080/api/<apiName>/ in order to retrieve the list of rows used to show in the table form
             apiEditName: this.props.config.apiEditName, // the name used to access the api eg: http://caido.ro:8080/api/<apiName>/ to add/edit a record
             apiDeleteName: this.props.config.apiDeleteName, // the name used to access the api eg: http://caido.ro:8080/api/<apiName>/ to delete a record
             apiPath: this.props.config.apiPath, // how to extract the list of elements from the api JSON: countriesList
             config: this.props.config, // list of columns and their properties as defined in entieies directory
+            noRights: false, // when I access the API using axios, if the Api returns 401 or 403 I will set noRights to true to show later in the interface...
             visibleTabIndex: 0,
         };
     }
@@ -102,7 +103,7 @@ class GenericTable extends Component {
     /**
      * Obtains the data for the table form from the API
      */
-    getDataFromApi() {
+    async getDataFromApi() {
         console.log("getDataFromApi ");
 
         if(this.props.isTab && this.props.parentSelectedRowId===undefined) { // nothing to do if this is a tab and no row is selected in the parent
@@ -115,7 +116,27 @@ class GenericTable extends Component {
         }
         item.selectedRowId = undefined;
         console.log("getDataFromApi "+url);
-        axios.get(url, commonData.getConfig())
+        let returnStructure = await commonData.getDataFromApi(this.state.apiName, this.props.parentSelectedRowId, this.state.apiPath);
+        if(returnStructure.success && returnStructure.data!==undefined) {
+            console.log("getDataFromApi success ");
+            item.rows = returnStructure.data;
+            const sortedRows = commonData.sort(item.rows, commonData.getComparator(item.order, item.orderBy));
+            const updatedRows = sortedRows.slice(
+                this.state.page * this.state.rowsPerPage,
+                this.state.page * this.state.rowsPerPage + this.state.rowsPerPage,
+            );
+            item.filteredRows = updatedRows;
+            this.setState(item);
+        } else {
+            console.log("getDataFromApi error "+returnStructure.status);
+            if(returnStructure.status===401 || returnStructure.status===403) {
+                item.noRights = true;
+            }
+            item.rows = [];
+            item.filteredRows = [];
+            this.setState(item);
+        }
+        /*axios.get(url, commonData.getConfig())
             .then(res => {
                 //console.log(res.data);
                 item.rows = res.data["_embedded"][this.state.apiPath];
@@ -132,7 +153,7 @@ class GenericTable extends Component {
                 item.rows = [];
                 item.filteredRows = [];
                 this.setState(item);
-            });
+            });*/
     }
 
     componentDidUpdate(prevProps) {
@@ -179,27 +200,29 @@ class GenericTable extends Component {
      */
     handleRowClick = (event, rowId) => {
         console.log("handleRowClick for rowId "+rowId);
-        let item = {...this.state};
-        item.selectedRowId = rowId;
-        switch (event.detail) {
-            case 1: {
-                console.log('single click');
-                break;
+        if(this.state.config.allowEditing) {
+            let item = {...this.state};
+            item.selectedRowId = rowId;
+            switch (event.detail) {
+                case 1: {
+                    console.log('single click');
+                    break;
+                }
+                case 2: {
+                    console.log('double click');
+                    item.isPopupEditorOpened = true;
+                    break;
+                }
+                case 3: {
+                    console.log('triple click');
+                    break;
+                }
+                default: {
+                    break;
+                }
             }
-            case 2: {
-                console.log('double click');
-                item.isPopupEditorOpened = true;
-                break;
-            }
-            case 3: {
-                console.log('triple click');
-                break;
-            }
-            default: {
-                break;
-            }
+            this.setState(item);
         }
-        this.setState(item);
     }
 
     /**
@@ -469,69 +492,83 @@ class GenericTable extends Component {
                                 />
                                 <TableBody>
                                     {this.checkReadyToShowData()
-                                        ? this.state.filteredRows.map(row => {
-                                            //console.log(row);
-                                            /*return <commonData.StyledTableRow*/
-                                            return <TableRow
-                                                key={row.id}
-                                                sx={{ cursor: "pointer"}}
-                                                selected={this.state.selectedRowId===row.id?true:false}
-                                                onClick={(event) => this.handleRowClick(event, row.id)}
-                                            >
-                                                <commonData.StyledSmallTableCell padding="checkbox" sx={{"display":"none"}}><Checkbox color="primary" checked={this.state.selectedRowId===row.id?true:false}/></commonData.StyledSmallTableCell>
-                                                <commonData.StyledSmallTableCell align="right">{count++}</commonData.StyledSmallTableCell>
-                                                {
-                                                    this.state.config.Columns.map((col, i) =>
-                                                        {
-                                                            //console.log("row[col.id]: ");
-                                                            //console.log("col.id: "+col.id+" row[col.id]: "+row[col.id]);
-                                                            return col.type==="boolean"?
-                                                                <commonData.StyledTableCell key={i + "_" + row[col.id]}
-                                                                                            align={col.numeric ? 'right' : 'left'}
-                                                                                            sx={{"display": col.columnVisible === false ? 'none' : ''}}>
-                                                                    {row[col.id]===1?"Da":"Nu"}
-                                                                </commonData.StyledTableCell>:
-                                                                (col.type==="file" || col.type==="fileMultiple" )?
-                                                                <commonData.StyledTableCell key={i + "_" + row[col.id]}
-                                                                                            align={col.numeric ? 'right' : 'left'}
-                                                                                            sx={{"display": col.columnVisible === false ? 'none' : ''}}>
-                                                                    {row[col.id]===null?"":<img src={`${row[col.id]}`} width={100} sx={{border: 1, padding:"2px"}} alt="..."/>}
-                                                                </commonData.StyledTableCell>:
-                                                                col.type==="select"?
-                                                                    col.selectApiColumnType==="image"?
-                                                                        row[col.id]===null||row[col.id]===undefined||row[col.id]===""?
-                                                                            <commonData.StyledTableCell key={i + "_" + row[col.id]}
-                                                                                                        align={col.numeric ? 'right' : 'left'}
-                                                                                                        sx={{"display": col.columnVisible === false ? 'none' : ''}}>
-                                                                            </commonData.StyledTableCell>:
-                                                                            <commonData.StyledTableCell key={i + "_" + row[col.id]}
-                                                                                                        align={col.numeric ? 'right' : 'left'}
-                                                                                                        sx={{"display": col.columnVisible === false ? 'none' : ''}}>
-                                                                                {row[col.id][col.selectApiColumnName]===null?
-                                                                                    row[col.id][col.selectApiColumnNameBackup]===null?"":
-                                                                                        row[col.id][col.selectApiColumnNameBackup]:
-                                                                                    <img src={`${row[col.id][col.selectApiColumnName]}`} width={100} sx={{border: 1, padding:"2px"}} alt="..."/>}
-                                                                            </commonData.StyledTableCell>:
-                                                                        row[col.id]===null||row[col.id]===undefined||row[col.id]===""?
-                                                                            <commonData.StyledTableCell key={i + "_" + row[col.id]}
-                                                                                                        align={col.numeric ? 'right' : 'left'}
-                                                                                                        sx={{"display": col.columnVisible === false ? 'none' : ''}}>
-                                                                            </commonData.StyledTableCell>:
-                                                                            <commonData.StyledTableCell key={i + "_" + row[col.id]}
-                                                                                                        align={col.numeric ? 'right' : 'left'}
-                                                                                                        sx={{"display": col.columnVisible === false ? 'none' : ''}}>
-                                                                                {row[col.id][col.selectApiColumnName]}
-                                                                            </commonData.StyledTableCell>:
-                                                                    <commonData.StyledTableCell key={i + "_" + row[col.id]}
+                                        ? !this.state.noRights
+                                            ?this.state.filteredRows.map(row => {
+                                                //console.log(row);
+                                                /*return <commonData.StyledTableRow*/
+                                                return <TableRow
+                                                    key={row.id}
+                                                    sx={{ cursor: "pointer"}}
+                                                    selected={this.state.selectedRowId===row.id?true:false}
+                                                    onClick={(event) => this.handleRowClick(event, row.id)}
+                                                >
+                                                    <commonData.StyledSmallTableCell padding="checkbox" sx={{"display":"none"}}><Checkbox color="primary" checked={this.state.selectedRowId===row.id?true:false}/></commonData.StyledSmallTableCell>
+                                                    <commonData.StyledSmallTableCell align="right">{count++}</commonData.StyledSmallTableCell>
+                                                    {
+                                                        this.state.config.Columns.map((col, i) =>
+                                                            {
+                                                                //console.log("row[col.id]: ");
+                                                                //console.log("col.id: "+col.id+" row[col.id]: "+row[col.id]);
+                                                                return col.type==="boolean"
+                                                                    ?<commonData.StyledTableCell key={i + "_" + row[col.id]}
                                                                                                 align={col.numeric ? 'right' : 'left'}
                                                                                                 sx={{"display": col.columnVisible === false ? 'none' : ''}}>
-                                                                        {row[col.id]}
+                                                                        {row[col.id]===1?"Da":"Nu"}
                                                                     </commonData.StyledTableCell>
-                                                        }
-                                                    )
-                                                }
+                                                                    :(col.type==="file" || col.type==="fileMultiple" )
+                                                                        ?<commonData.StyledTableCell key={i + "_" + row[col.id]}
+                                                                                                align={col.numeric ? 'right' : 'left'}
+                                                                                                sx={{"display": col.columnVisible === false ? 'none' : ''}}>
+                                                                            {row[col.id]===null?"":<img src={`${row[col.id]}`} width={100} sx={{border: 1, padding:"2px"}} alt="..."/>}
+                                                                        </commonData.StyledTableCell>
+                                                                        :col.type==="select"
+                                                                            ?col.selectApiColumnType==="image"
+                                                                                ?row[col.id]===null||row[col.id]===undefined||row[col.id]===""
+                                                                                    ?<commonData.StyledTableCell key={i + "_" + row[col.id]}
+                                                                                                            align={col.numeric ? 'right' : 'left'}
+                                                                                                            sx={{"display": col.columnVisible === false ? 'none' : ''}}>
+                                                                                    </commonData.StyledTableCell>
+                                                                                    :<commonData.StyledTableCell key={i + "_" + row[col.id]}
+                                                                                                            align={col.numeric ? 'right' : 'left'}
+                                                                                                            sx={{"display": col.columnVisible === false ? 'none' : ''}}>
+                                                                                        {
+                                                                                            row[col.id][col.selectApiColumnName]===null?
+                                                                                            row[col.id][col.selectApiColumnNameBackup]===null?"":
+                                                                                                row[col.id][col.selectApiColumnNameBackup]:
+                                                                                            <img src={`${row[col.id][col.selectApiColumnName]}`} width={100} sx={{border: 1, padding:"2px"}} alt="..."/>
+                                                                                        }
+                                                                                    </commonData.StyledTableCell>
+                                                                                :row[col.id]===null||row[col.id]===undefined||row[col.id]===""
+                                                                                    ?<commonData.StyledTableCell key={i + "_" + row[col.id]}
+                                                                                                            align={col.numeric ? 'right' : 'left'}
+                                                                                                            sx={{"display": col.columnVisible === false ? 'none' : ''}}>
+                                                                                    </commonData.StyledTableCell>
+                                                                                    :<commonData.StyledTableCell key={i + "_" + row[col.id]}
+                                                                                                            align={col.numeric ? 'right' : 'left'}
+                                                                                                            sx={{"display": col.columnVisible === false ? 'none' : ''}}>
+                                                                                        {row[col.id][col.selectApiColumnName]}
+                                                                                    </commonData.StyledTableCell>
+                                                                            :col.type==="datetime"
+                                                                                ?<commonData.StyledTableCell key={i + "_" + row[col.id]}
+                                                                                                             align={col.numeric ? 'right' : 'left'}
+                                                                                                             sx={{"display": col.columnVisible === false ? 'none' : ''}}>
+                                                                                    {commonData.formatDatetime(row[col.id])}
+                                                                                </commonData.StyledTableCell>
+                                                                                :<commonData.StyledTableCell key={i + "_" + row[col.id]}
+                                                                                                        align={col.numeric ? 'right' : 'left'}
+                                                                                                        sx={{"display": col.columnVisible === false ? 'none' : ''}}>
+                                                                                    {row[col.id]}
+                                                                                </commonData.StyledTableCell>
+                                                            }
+                                                        )
+                                                    }
+                                                </TableRow>
+                                            })
+                                            :<TableRow>
+                                                <commonData.StyledSmallTableCell colSpan={this.state.config.Columns.length+2}>
+                                                    <h1>Nu aveti suficiente drepturi pentru a vizualiza aceasta sectiune</h1>
+                                                </commonData.StyledSmallTableCell>
                                             </TableRow>
-                                        })
                                         : null}
                                 </TableBody>
                             </Table>
@@ -540,27 +577,34 @@ class GenericTable extends Component {
                             <Table size='small'>
                                 <TableBody>
                                     <TableRow>
-                                        <TableCell sx={{padding: "0px 10px 0px 0px",}}>
+                                        {/*<TableCell sx={{padding: "0px 10px 0px 0px",}}>
                                             <FormControlLabel
                                                 control={<Switch checked={this.state.dense} onChange={(event) => this.handleChangeDense(event)} />}
                                                 label="Dense padding"
                                             />
-                                        </TableCell>
-                                        <TableCell sx={{width: '30px', maxWidth: '30px',padding: "0px 10px 0px 0px",}}>
-                                            <div style={{height:'30px',width: '30px'}}>
-                                                <AddSVG data-tip="Add" name="add" id="add" onClick={this.openPopupEditor}/>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell sx={{width: '30px', maxWidth: '30px',padding: "0px 10px 0px 0px",}}>
-                                            <div style={{height:'30px',width: '30px'}}>
-                                                <DeleteSVG data-tip="Delete" name="delete" id="delete" onClick={this.openAreYouSureDeleteDialog}/>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell sx={{width: '30px', maxWidth: '30px',padding: "0px 0px 0px 0px",}}>
-                                            <div style={{height:'30px',width: '30px'}}>
-                                                <EditSVG data-tip="Edit" name="edit" id="edit" onClick={this.openPopupEditor}/>
-                                            </div>
-                                        </TableCell>
+                                        </TableCell>*/}
+                                        {
+                                            this.state.config.allowEditing &&
+                                            <>
+                                                <TableCell sx={{width: '30px', maxWidth: '30px',padding: "0px 10px 0px 0px",}}>
+                                                    <div style={{height:'30px',width: '30px'}}>
+                                                        <AddSVG data-tip="Add" name="add" id="add" onClick={this.openPopupEditor}/>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell sx={{width: '30px', maxWidth: '30px',padding: "0px 10px 0px 0px",}}>
+                                                    <div style={{height:'30px',width: '30px'}}>
+                                                        <DeleteSVG data-tip="Delete" name="delete" id="delete" onClick={this.openAreYouSureDeleteDialog}/>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell sx={{width: '30px', maxWidth: '30px',padding: "0px 0px 0px 0px",}}>
+                                                    <div style={{height:'30px',width: '30px'}}>
+                                                        <EditSVG data-tip="Edit" name="edit" id="edit" onClick={this.openPopupEditor}/>
+                                                    </div>
+                                                </TableCell>
+                                            </>
+
+                                        }
+
                                         <TableCell sx={{padding: "0px 10px 0px 0px",}}>
                                             <TablePagination
                                                 rowsPerPageOptions={[2, 5, 10, 25, 50, 100, 1000]}

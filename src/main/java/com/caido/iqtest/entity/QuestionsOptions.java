@@ -63,9 +63,8 @@ public class QuestionsOptions implements Serializable {
     }
     public void setFontSize(Integer fontSize) {
         this.fontSize = fontSize;
-    }     
-
-
+    }
+    
     @Column(name="description", nullable=false)
     private String description;
     public String getDescription() {

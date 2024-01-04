@@ -39,5 +39,6 @@ class Countries extends Component {
     static apiEditName = "countries";
     static apiDeleteName = "countries";
     static apiPath = "countriesList";
+    static allowEditing = true;
 }
 export default Countries;

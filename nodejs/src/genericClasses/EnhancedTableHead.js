@@ -20,7 +20,7 @@ class EnhancedTableHead extends Component {
     }
 
     render() {
-        console.log("[ETH]render "+this.props.headCells );
+        //console.log("[ETH]render "+this.props.headCells );
         return (
             <TableHead>
                 <TableRow>
@@ -51,7 +51,7 @@ class EnhancedTableHead extends Component {
                                         active={this.props.orderBy === headCell.id}
                                         direction={this.props.orderBy === headCell.id ? this.props.order : 'asc'}
                                         onClick={this.handleRequestSort}
-                                        sx={{"color":"white","&:hover":{color: "white"},"active":{color: "white"}}}
+                                        sx={{"color":"black","&:hover":{color: "black"},"active":{color: "black"}}}
                                     >
                                         <b>{headCell.label}</b>
                                     </TableSortLabel>
@@ -68,8 +68,7 @@ class EnhancedTableHead extends Component {
                                             active={this.props.orderBy === headCell.id}
                                             direction={this.props.orderBy === headCell.id ? this.props.order : 'asc'}
                                             onClick={this.handleRequestSort}
-                                            sx={{"color":"white","&:hover":{color: "white"},"&:active":{color: "white"}}}
-                                            //sx={{"color":"white",":hover":{color: "white"},":active":{color: "white"},":visited":{color: "white"},":direction":{color: "white"}}}
+                                            sx={{"color":"black","&:hover":{color: "black"},"&:active":{color: "black"}}}
                                         >
                                             <b>{headCell.label}</b>
                                         </TableSortLabel>

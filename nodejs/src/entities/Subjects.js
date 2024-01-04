@@ -29,5 +29,6 @@ class Subjects extends Component {
     static apiEditName = "subjects";
     static apiDeleteName = "subjects";
     static apiPath = "subjectsList";
+    static allowEditing = true;
 }
 export default Subjects;

@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api")
@@ -53,10 +55,10 @@ public class UsersController {
 //        return CollectionModel.of(c, linkTo(methodOn(UsersController.class).getAll()).withSelfRel());
 //    }
 
-//    @PostMapping("/users")
-//    EntityModel<Users> create(@RequestBody Users o) {
-//        return assembler.toModel(usersService.save(o));
-//    }
+    @PostMapping("/users")
+    EntityModel<Users> create(@RequestBody Users o) {
+        return assembler.toModel(usersService.save(o));
+    }
 
     @GetMapping("/users/{id}")
     EntityModel<Users> getOne(@PathVariable Long id, HttpServletRequest hsr) throws Exception {

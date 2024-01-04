@@ -138,5 +138,6 @@ class Questions extends Component {
     static apiDeleteName = "questions";
     static apiEditName = "questions";
     static apiPath = "questionsList";
+    static allowEditing = true;
 }
 export default Questions;

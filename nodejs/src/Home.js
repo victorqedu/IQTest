@@ -3,7 +3,7 @@ import {
     AppBar,
     Box,
     Button,
-    Container, IconButton,
+    Container, Divider, IconButton,
     Input, Menu, MenuItem,
     Toolbar,
 } from "@mui/material";
@@ -18,6 +18,17 @@ import Subjects from "./entities/Subjects";
 import Contact from "./hardCodedClasses/Contact";
 import Login from "./hardCodedClasses/Login";
 import {AccountCircle} from "@mui/icons-material";
+import GenericTable from "./genericClasses/GenericTable";
+import TestsSessionsForConnectedUsers from "./entities/TestsSessionsForConnectedUsers";
+import TestsSessions from "./entities/TestsSessions";
+import Tests from "./entities/Tests";
+import Images from "./entities/Images";
+import Users from "./entities/Users";
+import Countries from "./entities/Countries";
+import GenericEdit from "./genericClasses/GenericEdit";
+import TestsImports from "./entities/TestsImports";
+import NewAccount from "./hardCodedClasses/NewAccount";
+import Groups from "./entities/Groups";
 
 class Home extends Component {
     constructor(props) {
@@ -30,7 +41,7 @@ class Home extends Component {
         this.updateConnectedState = this.updateConnectedState.bind(this);
 
         this.state = {
-            testId: undefined,
+            selectedTestIndex: undefined,
             action: undefined,
             questions: {},
             subjects: [], // all subjects from the database to be exposed in the main menu
@@ -60,6 +71,8 @@ class Home extends Component {
             item.connected = false;
             item.action = "";
             commonData.logout();
+        } else {
+            item.action = action;
         }
         this.setState(item);
     }
@@ -68,10 +81,11 @@ class Home extends Component {
         event.preventDefault();
         let idSubject = event.currentTarget.id;
         let item = {...this.state};
-        if(idSubject==="login" || idSubject==="contact") {
+        if(idSubject==="login" || idSubject==="contact" || idSubject === "newAccount") {
             item.action = idSubject;
             item.tests = undefined;
         } else {
+            item.action = "testsList";
             item.tests = (await commonData.getDataFromApi("testsWithSubjectId", idSubject, "testsList")).data;
             item.anchorEl = event.currentTarget;
             console.log("tests are");
@@ -107,12 +121,12 @@ class Home extends Component {
 
     async handleSubmit(event) {
         event.preventDefault();
-        let testId = event.target.test_id.value;
-        console.log("Start handleSubmit for test id "+testId);
-        if(testId!==undefined && testId!=null && testId!=="") {
+        let selectedTestIndex = event.target.selectedTestIndex.value;
+        console.log("Start handleSubmit for test id "+selectedTestIndex);
+        if(selectedTestIndex!==undefined && selectedTestIndex!=null && selectedTestIndex!=="") {
             let item = {...this.state};
-            item.testId = testId;
-            item.questions = (await commonData.getDataFromApi(Questions.apiName, testId, Questions.apiPath)).data;
+            item.selectedTestIndex = selectedTestIndex;
+            item.questions = (await commonData.getDataFromApi(Questions.apiName, this.state.tests[selectedTestIndex].id, Questions.apiPath)).data;
             console.log(item.questions[0].orderq);
             if(item.questions[0].orderq===null) {
                 console.log("Shuffling");
@@ -127,8 +141,8 @@ class Home extends Component {
     }
 
     render() {
-        /*console.log("action "+this.state.action);
-        this.state.tests && console.log("tests are defined");
+        console.log("action "+this.state.action);
+        /*this.state.tests && console.log("tests are defined");
         console.log(this.state.tests);*/
 
         const formStyle = { marginBottom: "5px" }; // Adjust the margin as needed
@@ -140,7 +154,7 @@ class Home extends Component {
             borderRadius: "10px",
             border: "2px solid #0A0610", // Border styling
         };
-        if(this.state.testId===undefined) {
+        if(this.state.selectedTestIndex===undefined) {
             return (
                 <>
                     <Helmet>
@@ -171,8 +185,10 @@ class Home extends Component {
                                     <Toolbar disableGutters>
                                         <Box sx={{ flexGrow: 1 }}>
                                             {
-                                                !this.state.connected
-                                                    && <Button id="login" key="login" onClick={this.handleMenuClick} sx={{ mx: 2, color: "black" }}>Conectare</Button>
+                                                !this.state.connected && <Button id="login" key="login" onClick={this.handleMenuClick} sx={{mx: 2, color: "black"}}>Conectare</Button>
+                                            }
+                                            {
+                                                !this.state.connected && <Button id="newAccount" key="newAccount" onClick={this.handleMenuClick} sx={{ mx: 2, color: "black" }}>Cont nou</Button>
                                             }
                                             {this.state.subjects.map((s, i) => (
                                                 <Button id={s.id} key={s.id} onClick={this.handleMenuClick} sx={{ mx: 2, color: "black" }}>{s.name}</Button>
@@ -189,7 +205,9 @@ class Home extends Component {
                                                                     aria-expanded={Boolean(this.state.anchorEl) ? 'true' : undefined}
                                                                     onClick={this.handleAccountButtonClick}>
                                                             <AccountCircle />
+                                                            {commonData.connectedUserName()}
                                                         </IconButton>
+
 
                                                         <Menu
                                                             id="demo-positioned-menu"
@@ -201,6 +219,20 @@ class Home extends Component {
                                                             <MenuItem id="accountTests" onClick={this.handleAccountClose}>Testele mele</MenuItem>
                                                             <MenuItem id="accountSettings" onClick={this.handleAccountClose}>Setări cont</MenuItem>
                                                             <MenuItem id="accountExit" onClick={this.handleAccountClose}>Ieșire</MenuItem>
+                                                            {
+                                                                commonData.connectedUserRole()==="ADMIN" &&
+                                                                [
+                                                                    <Divider key="dividerMenu"></Divider>,
+                                                                    <MenuItem key="manageTestsSessions" id="manageTestsSessions" onClick={this.handleAccountClose}>Log sesiuni de testele</MenuItem>,
+                                                                    <MenuItem key="manageTests" id="manageTests" onClick={this.handleAccountClose}>Administrare teste</MenuItem>,
+                                                                    <MenuItem key="manageImages" id="manageImages" onClick={this.handleAccountClose}>Administrare imagini</MenuItem>,
+                                                                    <MenuItem key="manageUsers" id="manageUsers" onClick={this.handleAccountClose}>Administrare utilizatori</MenuItem>,
+                                                                    <MenuItem key="manageSubjects" id="manageSubjects" onClick={this.handleAccountClose}>Administrare subiecte</MenuItem>,
+                                                                    <MenuItem key="manageGroups" id="manageGroups" onClick={this.handleAccountClose}>Administrare grupuri</MenuItem>,
+                                                                    <MenuItem key="manageCountries" id="manageCountries" onClick={this.handleAccountClose}>Administrare țări</MenuItem>,
+                                                                    <MenuItem key="manageTestImports" id="manageTestImports" onClick={this.handleAccountClose}>Import automat teste</MenuItem>,
+                                                                ]
+                                                            }
                                                         </Menu>
                                                     </>
                                             }
@@ -213,21 +245,41 @@ class Home extends Component {
                         <Box id="box2" display="flex" flexDirection="column" justifyContent="flex-start"
                              alignItems="center" marginTop={10}>
                             {
-                                (this.state.tests && this.state.tests.length>0)
-                                    ?this.state.tests.map((t, i) => {
-                                            return (<div key={"testID" + t.id} style={formStyle}>
-                                                <Form onSubmit={this.handleSubmit} style={formStyle}>
-                                                    <Input type="hidden" name="test_id" id="test_id" value={t.id}/>
-                                                    <Button variant="outlined" type="submit" className="glowing-text-button"
-                                                            style={buttonStyle}>{t.description}</Button>
-                                                </Form>
-                                            </div>);
-                                        })
-                                    :this.state.action==="login"
-                                        ?<Login updateConnectedState={this.updateConnectedState}/>
+                                this.state.action==="login"
+                                    ?<Login updateConnectedState={this.updateConnectedState}/>
+                                    :this.state.action==="newAccount"
+                                        ?<NewAccount/>
                                         :this.state.action==="contact"
                                             ?<Contact/>
-                                            :""
+                                            :this.state.action==="accountTests"
+                                                ?<GenericTable key="accountTests" config={TestsSessionsForConnectedUsers} customApiName="getUserTestsSessions"/>
+                                                :this.state.action==="manageTestsSessions"
+                                                    ?<GenericTable key="manageTestsSessions" config={TestsSessions}/>
+                                                    :this.state.action==="manageTests"
+                                                        ?<GenericTable key="manageTests" config={Tests}/>
+                                                        :this.state.action==="manageImages"
+                                                            ?<GenericTable key="manageImages" config={Images}/>
+                                                            :this.state.action==="manageUsers"
+                                                                ?<GenericTable key="manageUsers" config={Users}/>
+                                                                :this.state.action==="manageSubjects"
+                                                                    ?<GenericTable key="manageSubjects" config={Subjects}/>
+                                                                    :this.state.action==="manageCountries"
+                                                                        ?<GenericTable key="manageCountries" config={Countries}/>
+                                                                        :this.state.action==="manageTestImports"
+                                                                            ?<GenericEdit key="manageTestImports" columns={TestsImports.Columns} apiEditName={TestsImports.apiEditName}/>
+                                                                            :this.state.action==="manageGroups"
+                                                                                ?<GenericEdit key="manageGroups" columns={Groups.Columns} apiEditName={Groups.apiEditName}/>
+                                                                                :(this.state.tests && this.state.tests.length>0)
+                                                                                    ?this.state.tests.map((t, i) => {
+                                                                                        return (<div key={"testID" + t.id} style={formStyle}>
+                                                                                            <Form onSubmit={this.handleSubmit} style={formStyle}>
+                                                                                                <Input type="hidden" name="selectedTestIndex" id="selectedTestIndex" value={i}/>
+                                                                                                <Button variant="outlined" type="submit" className="glowing-text-button"
+                                                                                                        style={buttonStyle}>{t.description}</Button>
+                                                                                            </Form>
+                                                                                        </div>);
+                                                                                        })
+                                                                                    :""
                             }
                         </Box>
                     </Box>
@@ -243,7 +295,7 @@ class Home extends Component {
                         <meta name="description" content="IQ test"/>
                         <meta name="google-site-verification" content="ovqCMnQY9qDGgKVOXY4IsnN_WE9L3QYV7Okn-7H1Bv0" />
                     </Helmet>
-                    <ShowTestsQuestions questions={this.state.questions} testId={this.state.testId}/>
+                    <ShowTestsQuestions questions={this.state.questions} test={this.state.tests[this.state.selectedTestIndex]}/>
                 </>
             );
         }

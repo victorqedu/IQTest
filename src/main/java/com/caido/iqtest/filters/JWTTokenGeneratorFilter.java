@@ -33,6 +33,7 @@ public class JWTTokenGeneratorFilter extends OncePerRequestFilter {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (null != authentication) {
             SecretKey key = Keys.hmacShaKeyFor(SecurityConstants.JWT_KEY.getBytes(StandardCharsets.UTF_8));
+            System.out.println("authentication.getAuthorities() "+authentication.getAuthorities());
             String jwt = Jwts.builder().setIssuer(SecurityConstants.JWT_SUBJECT).setSubject("JWT Token")
                     .claim("username", authentication.getName())
                     .claim("id", usersRepository.findByEmail(authentication.getName()).getId())

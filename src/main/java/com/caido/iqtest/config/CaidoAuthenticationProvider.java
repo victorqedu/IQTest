@@ -34,16 +34,16 @@ public class CaidoAuthenticationProvider implements AuthenticationProvider  {
         Users user = usersService.findByEmail(username);
         if (passwordEncoder.matches(pwd, user.getPasswordReal())) {
             System.out.println("Authenticated successfully");
-            return new UsernamePasswordAuthenticationToken(username, pwd, getGrantedAuthorities());
+            return new UsernamePasswordAuthenticationToken(username, pwd, getGrantedAuthorities(user.getRole()));
         } else {
             System.out.println("Invalid password");
             throw new InvalidCredentialsException("Parola invalida!");
         }
     }
     
-    private List<GrantedAuthority> getGrantedAuthorities() {
+    private List<GrantedAuthority> getGrantedAuthorities(String role) {
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-        grantedAuthorities.add(new SimpleGrantedAuthority("GENERIC"));
+        grantedAuthorities.add(new SimpleGrantedAuthority(role));
         return grantedAuthorities;
     }
     @Override

@@ -12,6 +12,16 @@ class TestsSessions extends Component {
             editable: false,
         },
         {
+            id: 'testDate',
+            numeric: false,
+            disablePadding: false,
+            label: 'Data',
+            type: 'text',
+            columnVisible: true,
+            size: 'regular',
+            editable: false,
+        },
+        {
             id: 'ipAddress',
             numeric: false,
             disablePadding: false,

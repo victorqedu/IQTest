@@ -70,6 +70,15 @@ class Users extends Component {
             columnVisible: true,
             size: 'regular',
             editable: true,
+        },        {
+            id: 'role',
+            numeric: false,
+            disablePadding: false,
+            label: 'Rol',
+            type: 'text',
+            columnVisible: true,
+            size: 'regular',
+            editable: true,
         },
         {
             id: 'suspended',
@@ -153,5 +162,6 @@ class Users extends Component {
     static apiEditName = "users";
     static apiDeleteName = "users";
     static apiPath = "usersList";
+    static allowEditing = true;
 }
 export default Users;

@@ -80,7 +80,7 @@ public class QuestionsController {
 
 class QuestionNotFoundException extends RuntimeException {
     QuestionNotFoundException(Long id) {
-        super("Could not find test  with id " + id);
+        super("Could not find question with id " + id);
     }
 }
 

@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import {
     Box,
-    Button,
+    Button, CircularProgress,
     Dialog, DialogActions, DialogContent, DialogContentText,
     DialogTitle,
     Paper,
@@ -42,6 +42,7 @@ class ShowTestsQuestions extends Component {
         this.genericNextQuestion = this.genericNextQuestion.bind(this);
         this.showErrorAndMoveToNextQuestion = this.showErrorAndMoveToNextQuestion.bind(this);
         this.randomImage = this.randomImage.bind(this);
+        this.setNextQuestionData = this.setNextQuestionData.bind(this);
 
         this.state = {
             questions: this.props.questions,
@@ -59,8 +60,8 @@ class ShowTestsQuestions extends Component {
             isPortrait: false,
             isTabletOrMobile: false,
             hasTimers: false,
-            testId: this.props.testId,
-            test: undefined,
+            test: this.props.test,
+            loadingNextQuestion: true, // when true I will display a special windows that says loading next question
             endTime: undefined, //the time when this test will end because of the time restriction per test
             theResponse: "", // this is the respone in text format, when the user inputs the data in a TextField
             buttonStyleBase: {
@@ -102,7 +103,7 @@ class ShowTestsQuestions extends Component {
                 margin: '2px',
                 '&:hover': {
                     backgroundColor: '#e9ccb8', // Change this to the desired hover color
-                    border: "2px solid #e9ccb8",
+                    border: "3px solid #FFAAAA",
                 },
             },
             buttonStyleWrong: {
@@ -127,17 +128,6 @@ class ShowTestsQuestions extends Component {
             }
             return "";
         });
-        axios.get(commonData.getApiLink()+"tests/"+this.state.testId, commonData.getConfig())
-            .then(res => {
-                let item = {...this.state};
-                item.test = res.data;
-                item.endTime = Date.now() + item.test.maxTime*1000;
-                this.setState(item);
-            }).catch(error => {
-                console.log("Error is"+error);
-            });
-
-
     }
 
     /**
@@ -200,6 +190,7 @@ class ShowTestsQuestions extends Component {
             this.shuffleArray(item.currentQuestionOptions);
         }
         await this.randomImage(item, 0);
+        item.loadingNextQuestion = false;
         this.setState(item);
     }
 
@@ -292,10 +283,11 @@ class ShowTestsQuestions extends Component {
     async handleAnswer(event) {
         console.log("Start handleAnswer");
         event.preventDefault();
+
         let indexAnswer = event.currentTarget.id; // "indexAnswer" is the answer index(0,1,2,3,4,5...) in the array of possible answers, is not the indexAnswer from the database
         let item = {...this.state};
         await this.saveCurrentQuestionData(item, indexAnswer);
-
+        await this.saveCurrentQuestionData(item, indexAnswer);
         if(item.currentQuestion<item.questions.length-1) { // if I'm not at the last question
             await this.genericNextQuestion(item);
         } else { // this is the last question, start the process of submitting the data to the API
@@ -324,35 +316,47 @@ class ShowTestsQuestions extends Component {
         if(nextQuestionIndex!==undefined) {
             currentQuestion = nextQuestionIndex;
         }
-
-        let currentQuestionOptions = (await commonData.getDataFromApi(QuestionsOptions.apiName, item.questions[currentQuestion]["id"], QuestionsOptions.apiPath)).data;
-        await this.randomImage(item,currentQuestion);
         console.log("in genericNextQuestion current q font is "+item.questions[currentQuestion]?.fontSize);
-        await this.showErrorAndMoveToNextQuestion(item, currentQuestion, currentQuestionOptions);
+        await this.showErrorAndMoveToNextQuestion(item, currentQuestion);
     }
 
-    async showErrorAndMoveToNextQuestion(item, currentQuestion, currentQuestionOptions) {
+    async showErrorAndMoveToNextQuestion(item, currentQuestion) {
         /**
          * I set the state and show if the answer is correct/incorrect and in the callback, after 1 second I move to the next question
          */
-        this.setState(item, () => {
-            let ti = setInterval(() => {
-                item.currentQuestion = currentQuestion;
-                item.theResponse = item.questionsTextAnswers[item.currentQuestion]||"";
-                item.currentQuestionOptions = currentQuestionOptions;
-                item.correct = item.questionsCorrect[item.currentQuestion];
+        item.loadingNextQuestion = true;
+        await this.setState(item);
+        let currentQuestionOptions = item.questionsOptions[currentQuestion];
+        if(commonData.isEmpty(currentQuestionOptions)) {
+            currentQuestionOptions = (await commonData.getDataFromApi(QuestionsOptions.apiName, item.questions[currentQuestion]["id"], QuestionsOptions.apiPath)).data;
+            await this.randomImage(item,currentQuestion);
+        }
+        item.loadingNextQuestion = false;
 
-                if(item.currentQuestionOptions!==undefined && item.currentQuestionOptions.length>0) {
-                    this.shuffleArray(item.currentQuestionOptions);
-                }
-                this.setState(item);
-                console.log("this.timerRef "+this.timerRef);
-                if(this.timerRef!==undefined) {
-                    this.timerRef.resetTimer();
-                }
+        if(this.state.test.detailsPerQuestion===0) {
+            await this.setNextQuestionData(item, currentQuestion, currentQuestionOptions);
+        } else {
+            let ti = setInterval(() => {
+                this.setNextQuestionData(item, currentQuestion, currentQuestionOptions);
                 clearInterval(ti);
             }, 1000);
-        });
+        }
+    }
+
+    async setNextQuestionData(item, currentQuestion, currentQuestionOptions) {
+        item.currentQuestion = currentQuestion;
+        item.theResponse = item.questionsTextAnswers[item.currentQuestion]||"";
+        item.currentQuestionOptions = currentQuestionOptions;
+        item.correct = item.questionsCorrect[item.currentQuestion];
+
+        if(item.currentQuestionOptions!==undefined && item.currentQuestionOptions.length>0) {
+            this.shuffleArray(item.currentQuestionOptions);
+        }
+        this.setState(item);
+        console.log("this.timerRef "+this.timerRef);
+        if(!commonData.isEmpty(this.timerRef)) {
+            this.timerRef.resetTimer();
+        }
     }
 
     /**
@@ -460,21 +464,19 @@ class ShowTestsQuestions extends Component {
      */
     answerCell(answerNumber, dimFactor) {
         return <TableCell sx={{padding: 0, width: '33%'}} align="center">
-
-                <Button id={answerNumber} key={"page"+answerNumber} variant="" onClick={this.handleAnswer}
-                        sx={{ width: '97%', height: '100px', ...this.state.buttonStyleCurrent,
-                            fontSize: this.state.currentQuestionOptions[answerNumber]?.fontSize+"px",
-                            border: 3, padding:0.3, borderColor: this.state.currentQuestionOptions[answerNumber]["id"]===this.state.questionsAnswers[this.state.currentQuestion]?.id?"#FFAAAA":"white"
-                        }}
-                        className="glowing-text-button">
-                    {
-                        this.state.currentQuestionOptions[answerNumber]["image"]===null?
-                            this.state.currentQuestionOptions[answerNumber]["description"]:
-                            <img src={`${this.state.currentQuestionOptions[answerNumber]["image"]}`} width={100*dimFactor} sx={{border: 1, padding:"2px"}} alt="..."/>
-                    }
-                </Button>
-
-        </TableCell>
+                    <Button id={answerNumber} key={"page"+answerNumber} variant="" onClick={this.handleAnswer}
+                            sx={{ width: '97%', height: '100px', ...this.state.buttonStyleCurrent,
+                                fontSize: this.state.currentQuestionOptions[answerNumber]?.fontSize+"px",
+                                border: 3, padding:0.3, borderColor: this.state.currentQuestionOptions[answerNumber]["id"]===this.state.questionsAnswers[this.state.currentQuestion]?.id?"#FFAAAA":"white"
+                            }}
+                            className="glowing-text-button">
+                        {
+                            this.state.currentQuestionOptions[answerNumber]["image"]===null?
+                                this.state.currentQuestionOptions[answerNumber]["description"]:
+                                <img src={`${this.state.currentQuestionOptions[answerNumber]["image"]}`} width={100*dimFactor} sx={{border: 1, padding:"2px"}} alt="..."/>
+                        }
+                    </Button>
+            </TableCell>
     }
 
     /**
@@ -494,11 +496,9 @@ class ShowTestsQuestions extends Component {
      * @returns {{}}
      */
     prepareTestDataToSave() {
-        console.log("getData "+this.props.testId);
-
         let row = {};
         let objTest = {};
-        objTest["id"] =  this.props.testId;
+        objTest["id"] =  this.props.test.id;
         row["idTests"] = objTest;
         row["testsSessionsAnswers"] = [];
         for(let i=0;i<this.state.questions.length;i++) {
@@ -526,7 +526,7 @@ class ShowTestsQuestions extends Component {
         if(this.state.test===undefined) {
             return "Se incarca datele...";
         }
-        console.log("qqd "+this.state.questions[this.state.currentQuestion]["description"]);
+        console.log("this.state.test.maxTime "+this.state.test.maxTime+"this.state.loadingNextQuestion "+this.state.loadingNextQuestion);
         const renderer = ({ hours, minutes, seconds, completed }) => {
             if (completed) {
                 this.startSubmitProcess(null);
@@ -564,7 +564,7 @@ class ShowTestsQuestions extends Component {
                 axios.get(commonData.getApiLink()+"testssessionpoints/"+editData.id, commonData.getConfig())
                     .then(res => {
                         let points = res.data;
-                        axios.get(commonData.getApiLink()+"testsMaxPoints/"+this.state.testId, commonData.getConfig())
+                        axios.get(commonData.getApiLink()+"testsMaxPoints/"+this.state.test.id, commonData.getConfig())
                             .then(res => {
                                 let maxPoints = res.data;
                                 let item = {...this.state};
@@ -662,7 +662,7 @@ class ShowTestsQuestions extends Component {
                                                 {
                                                     this.state.test.maxTime>0
                                                         ?<Countdown date={this.state.endTime} renderer={renderer}/>
-                                                        :this.state.questions[this.state.currentQuestion]["maxTime"]>0
+                                                        :(this.state.questions[this.state.currentQuestion]["maxTime"]>0 && !this.state.loadingNextQuestion)
                                                             ?<Timer initialTime={this.state.questions[this.state.currentQuestion]["maxTime"]} onTimerEnd={handleTimerEnd} ref={(ref) => (this.timerRef = ref)}/>
                                                             :""
                                                 }
@@ -682,60 +682,70 @@ class ShowTestsQuestions extends Component {
                             </TableContainer>
 
                             {
-                                this.state.isPortrait?
-                                    Array.isArray(this.state.currentQuestionOptions) &&
-                                    <TableContainer component={Paper}>
-                                        <Table border={0} >
-                                            <TableBody>
-                                                <TableRow>
-                                                    <TableCell sx={{border: 0,padding: 0}} align="center">
-                                                        <Table border={0} sx={{border: 0,padding: 0,}} >
-                                                            <TableBody>
-                                                                <TableRow sx={{border: 0,padding: 0,}}>
-                                                                    <TableCell sx={{padding: 0,border: 0, fontSize: this.state.questions[this.state.currentQuestion]?.fontSize+"px"}} align="left">
-                                                                        <div>
+                                this.state.loadingNextQuestion
+                                    ?<Box sx={{
+                                        display: 'flex',
+                                        padding: "20px",
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        minHeight: '200px',
+                                    }}>
+                                        <CircularProgress color="inherit"/>
+                                    </Box>
+                                    :this.state.isPortrait
+                                        ?Array.isArray(this.state.currentQuestionOptions) &&
+                                        <TableContainer component={Paper}>
+                                            <Table border={0} >
+                                                <TableBody>
+                                                    <TableRow>
+                                                        <TableCell sx={{border: 0,padding: 0}} align="center">
+                                                            <Table border={0} sx={{border: 0,padding: 0,}} >
+                                                                <TableBody>
+                                                                    <TableRow sx={{border: 0,padding: 0,}}>
+                                                                        <TableCell sx={{padding: 0,border: 0, fontSize: this.state.questions[this.state.currentQuestion]?.fontSize+"px"}} align="left">
+                                                                            <div>
+                                                                                {
+                                                                                    this.state.questions[this.state.currentQuestion]["description"].split('\n').map((line, index) => (
+                                                                                        <React.Fragment key={index}>
+                                                                                            {line}<br/>
+                                                                                        </React.Fragment>
+                                                                                    ))
+                                                                                }
+                                                                            </div>
+                                                                        </TableCell>
+                                                                    </TableRow>
+                                                                    <TableRow sx={{border: 0,padding: 0,}}>
+                                                                        <TableCell sx={{padding: 0,border: 0, fontSize: this.state.questions[this.state.currentQuestion]?.fontSize+"px"}} align="center">
                                                                             {
-                                                                                this.state.questions[this.state.currentQuestion]["description"].split('\n').map((line, index) => (
-                                                                                    <React.Fragment key={index}>
-                                                                                        {line}<br/>
-                                                                                    </React.Fragment>
-                                                                                ))
+                                                                                commonData.isEmpty(this.state.questions[this.state.currentQuestion]["image"])
+                                                                                    ?""
+                                                                                    :<img src={`${this.state.questions[this.state.currentQuestion]["image"]}`}
+                                                                                          width={commonData.isEmpty(this.state.questions[this.state.currentQuestion]["imageWidth"])
+                                                                                              ?300
+                                                                                              :this.state.questions[this.state.currentQuestion]["imageWidth"]*dimFactor}
+                                                                                          className="roundedImage" alt="i1"/>
                                                                             }
-                                                                        </div>
-                                                                    </TableCell>
-                                                                </TableRow>
-                                                                <TableRow sx={{border: 0,padding: 0,}}>
-                                                                    <TableCell sx={{padding: 0,border: 0, fontSize: this.state.questions[this.state.currentQuestion]?.fontSize+"px"}} align="center">
-                                                                        {
-                                                                            commonData.isEmpty(this.state.questions[this.state.currentQuestion]["image"])
-                                                                                ?""
-                                                                                :<img src={`${this.state.questions[this.state.currentQuestion]["image"]}`}
-                                                                                        width={commonData.isEmpty(this.state.questions[this.state.currentQuestion]["imageWidth"])
-                                                                                            ?300
-                                                                                            :this.state.questions[this.state.currentQuestion]["imageWidth"]*dimFactor}
-                                                                                        className="roundedImage" alt="i1"/>
-                                                                        }
-                                                                    </TableCell>
-                                                                </TableRow>
-                                                            </TableBody>
-                                                        </Table>
-                                                    </TableCell>
-                                                </TableRow>
-
-                                                <TableRow>
-                                                    <TableCell sx={{padding: 0}} align="center">
-                                                        <TableContainer component={Paper}>
-                                                            <Table border={0}>
-                                                                {this.answerSection(dimFactor)}
+                                                                        </TableCell>
+                                                                    </TableRow>
+                                                                </TableBody>
                                                             </Table>
-                                                        </TableContainer>
-                                                    </TableCell>
-                                                </TableRow>
-                                            </TableBody>
-                                        </Table>
-                                    </TableContainer>:
-                                    Array.isArray(this.state.currentQuestionOptions) &&
-                                    <TableContainer component={Paper} >
+                                                        </TableCell>
+                                                    </TableRow>
+
+                                                    <TableRow>
+                                                        <TableCell sx={{padding: 0}} align="center">
+                                                            <TableContainer component={Paper}>
+                                                                <Table border={0}>
+                                                                    {this.answerSection(dimFactor)}
+                                                                </Table>
+                                                            </TableContainer>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                </TableBody>
+                                            </Table>
+                                        </TableContainer>
+                                        :Array.isArray(this.state.currentQuestionOptions) &&
+                                        <TableContainer component={Paper} >
                                         <Table border={0} >
                                             <TableBody>
                                                 <TableRow>
@@ -754,15 +764,15 @@ class ShowTestsQuestions extends Component {
                                                                             }
                                                                         </div>
                                                                         <div align="center">
-                                                                        {
-                                                                            commonData.isEmpty(this.state.questions[this.state.currentQuestion]["image"])
-                                                                                ?""
-                                                                                :<img src={`${this.state.questions[this.state.currentQuestion]["image"]}`}
-                                                                                      width={commonData.isEmpty(this.state.questions[this.state.currentQuestion]["imageWidth"])
-                                                                                          ?300
-                                                                                          :this.state.questions[this.state.currentQuestion]["imageWidth"]*dimFactor}
-                                                                                      className="roundedImage" alt="i1"/>
-                                                                        }
+                                                                            {
+                                                                                commonData.isEmpty(this.state.questions[this.state.currentQuestion]["image"])
+                                                                                    ?""
+                                                                                    :<img src={`${this.state.questions[this.state.currentQuestion]["image"]}`}
+                                                                                          width={commonData.isEmpty(this.state.questions[this.state.currentQuestion]["imageWidth"])
+                                                                                              ?300
+                                                                                              :this.state.questions[this.state.currentQuestion]["imageWidth"]*dimFactor}
+                                                                                          className="roundedImage" alt="i1"/>
+                                                                            }
                                                                         </div>
                                                                     </TableCell>
                                                                 </TableRow>

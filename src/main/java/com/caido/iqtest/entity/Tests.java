@@ -97,6 +97,16 @@ public class Tests implements Serializable {
     public void setIdSubjects(Subjects idSubjects) {
         this.idSubjects = idSubjects;
     }
+    
+    @ManyToOne(cascade = {CascadeType.DETACH})
+    @JoinColumn(name="id_groups", nullable=false)
+    private Groups idGroups;
+    public Groups getIdGroups() {
+        return idGroups;
+    }
+    public void setIdGroups(Groups idGroups) {
+        this.idGroups = idGroups;
+    }
 
     @Column(name="max_time")
     private Integer maxTime;

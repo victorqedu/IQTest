@@ -54,7 +54,7 @@ public class Questions implements Serializable {
 
     @JsonIgnoreProperties("idQuestions")
     @ManyToOne(cascade = {CascadeType.DETACH})
-    @JoinColumn(name="id_questions_options_correct", nullable=false)
+    @JoinColumn(name="id_questions_options_correct")
     private QuestionsOptions idQuestionsOptionsCorrect;
     public QuestionsOptions getIdQuestionsOptionsCorrect() {
         return idQuestionsOptionsCorrect;

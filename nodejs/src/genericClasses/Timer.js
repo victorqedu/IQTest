@@ -22,7 +22,7 @@ class Timer extends Component {
     startTimer() {
         this.timerInterval = setInterval(() => {
             this.setState((prevState) => ({
-                time: prevState.time - 1,
+                time: prevState.time>0 && prevState.time - 1,
             }), () => {
                 if (this.state.time <= 0) {
                     this.clearTimer();

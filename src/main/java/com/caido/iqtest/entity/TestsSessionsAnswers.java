@@ -59,7 +59,7 @@ public class TestsSessionsAnswers implements Serializable {
     }
     
     @ManyToOne
-    @JoinColumn(name="id_questions_options", nullable=false)
+    @JoinColumn(name="id_questions_options")
     private QuestionsOptions idQuestionsOptions;
     public QuestionsOptions getIdQuestionsOptions() {
         return idQuestionsOptions;

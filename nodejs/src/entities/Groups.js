@@ -1,5 +1,5 @@
 import { Component } from 'react';
-class Sex extends Component {
+class Groups extends Component {
     static Columns = [
         {
             id: 'id',
@@ -10,16 +10,6 @@ class Sex extends Component {
             columnVisible: false,
             size: 'small',
             editable: false,
-        },
-        {
-            id: 'code',
-            numeric: false,
-            disablePadding: false,
-            label: 'Code',
-            type: 'text',
-            columnVisible: true,
-            size: 'small',
-            editable: true,
         },
         {
             id: 'name',
@@ -35,10 +25,10 @@ class Sex extends Component {
     static DEFAULT_ORDER = 'asc';
     static DEFAULT_ORDER_BY = 'name';
     static DEFAULT_ROWS_PER_PAGE = 5;
-    static apiName = "sex";
-    static apiEditName = "sex";
-    static apiDeleteName = "sex";
-    static apiPath = "sexList";
+    static apiName = "groups";
+    static apiEditName = "groups";
+    static apiDeleteName = "groups";
+    static apiPath = "groupsList";
     static allowEditing = true;
 }
-export default Sex;
+export default Groups;

@@ -54,13 +54,13 @@ public class SecurityConfig {
                                     "/api/subjects",
                                     "/api/testssessionpoints/*",
                                     "/api/testsMaxPoints/*",
-                                    "/api/testsWithSubjectId/*")
-                            .permitAll()
-                            .requestMatchers(HttpMethod.POST, "/api/testssessions")
-                            .permitAll()
-                            .requestMatchers(HttpMethod.GET, "fqw").hasRole("ADMIN")
-                            .anyRequest()
-                            .authenticated();
+                                    "/api/testsWithSubjectId/*").permitAll()
+                            .requestMatchers(HttpMethod.POST, 
+                                    "/api/testssessions",
+                                    "/api/users").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/api/getUserTestsSessions").authenticated()
+                            .anyRequest().hasAuthority("ADMIN")
+                            ;
                 })
                 .addFilterBefore(new CustomAccountChecksFilter(usersRepository), BasicAuthenticationFilter.class)
                 .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
@@ -69,10 +69,53 @@ public class SecurityConfig {
                 ;
         return http.build();
     }
-    
-    
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 }
+
+
+//                            .requestMatchers(HttpMethod.GET, "/api/images").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.GET, "/api/countries").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.GET, "/api/countries/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.GET, "/api/questions").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.GET, "/api/questions/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.GET, "/api/questionsoptions").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.GET, "/api/questionsoptions/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.GET, "/api/sex/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.GET, "/api/subjects/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.GET, "/api/tests").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.GET, "/api/testssessions").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.GET, "/api/testssessions/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.GET, "/api/users/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.POST, "/api/images").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.POST, "/api/countries").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.POST, "/api/questions").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.POST, "/api/questionsoptions").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.POST, "/api/sex").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.POST, "/api/subjects").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.POST, "/api/tests").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.POST, "/api/testssessions").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.POST, "/api/users").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.PUT, "/api/images/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.PUT, "/api/countries/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.PUT, "/api/questions/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.PUT, "/api/questionsoptions/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.PUT, "/api/sex/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.PUT, "/api/subjects/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.PUT, "/api/tests/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.PUT, "/api/testssessions/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.PUT, "/api/users/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.DELETE, "/api/images/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.DELETE, "/api/countries/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.DELETE, "/api/questions/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.DELETE, "/api/questionsoptions/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.DELETE, "/api/sex/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.DELETE, "/api/subjects/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.DELETE, "/api/tests/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.DELETE, "/api/testssessions/*").hasRole("ADMIN")
+//                            .requestMatchers(HttpMethod.DELETE, "/api/users/*").hasRole("ADMIN")
+//                            .anyRequest()
+//                            .authenticated()
