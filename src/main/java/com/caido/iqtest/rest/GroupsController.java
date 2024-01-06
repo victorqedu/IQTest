@@ -35,7 +35,7 @@ public class GroupsController {
         this.assembler = assembler;
     }
 
-    @GetMapping("/sroups")
+    @GetMapping("/groups")
     CollectionModel<EntityModel<Groups>> getAll() {
         List<EntityModel<Groups>> c = repository.findAll().stream() 
             .map(assembler::toModel) 
@@ -43,24 +43,31 @@ public class GroupsController {
         return CollectionModel.of(c, linkTo(methodOn(GroupsController.class).getAll()).withSelfRel());
     }
     
-    @PostMapping("/sroups")
+    @GetMapping("/findGroupsWithSubjectId/{idSubject}")
+    CollectionModel<EntityModel<Groups>> findGroupsWithSubjectId(@PathVariable Long idSubject) {
+        List<EntityModel<Groups>> c = repository.findGroupsWithSubjectId(idSubject).stream() 
+            .map(assembler::toModel) 
+            .collect(Collectors.toList());
+        return CollectionModel.of(c, linkTo(methodOn(GroupsController.class).findGroupsWithSubjectId(idSubject)).withSelfRel());
+    }
+    @PostMapping("/groups")
     EntityModel<Groups> create(@RequestBody Groups o) {
         return assembler.toModel(repository.save(o));
     }
 
-    @GetMapping("/sroups/{id}")
+    @GetMapping("/groups/{id}")
     EntityModel<Groups> getOne(@PathVariable Long id) {
         System.out.println("Start getOne");
         Groups c = repository.findById(id).orElseThrow(() -> new GroupNotFoundException(id));
         return assembler.toModel(c);
     }
 
-    @PutMapping("/sroups/{id}")
+    @PutMapping("/groups/{id}")
     EntityModel<Groups> replace(@RequestBody Groups c, @PathVariable Long id) {
         return assembler.toModel(repository.save(c));
     }
 
-    @DeleteMapping("/sroups/{id}")
+    @DeleteMapping("/groups/{id}")
     void delete(@PathVariable Long id) {
         repository.deleteById(id);
     }
@@ -88,6 +95,6 @@ class GroupModelAssembler implements RepresentationModelAssembler<Groups, Entity
   public EntityModel<Groups> toModel(Groups c) {
     return EntityModel.of(c, 
         linkTo(methodOn(GroupsController.class).getOne(c.getId())).withSelfRel(),
-        linkTo(methodOn(GroupsController.class).getAll()).withRel("sroups"));
+        linkTo(methodOn(GroupsController.class).getAll()).withRel("groups"));
   }
 }

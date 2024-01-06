@@ -135,6 +135,16 @@ class Tests extends Component {
             size: 'regular',
             editable: true,
         },
+        {
+            id: 'hasBeenFinalized',
+            numeric: true,
+            disablePadding: false,
+            label: 'Finalizat de utilizatorul conectat',
+            type: 'boolean',
+            columnVisible: false,
+            size: 'regular',
+            editable: false,
+        },
     ];
     static tabs = [
         {

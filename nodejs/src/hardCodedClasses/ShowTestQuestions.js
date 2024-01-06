@@ -1,15 +1,7 @@
 import React, {Component} from "react";
 import {
-    Box,
-    Button, CircularProgress,
-    Dialog, DialogActions, DialogContent, DialogContentText,
-    DialogTitle,
-    Paper,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer, TableHead,
-    TableRow, TextField
+    Box,Button, CircularProgress,Dialog, DialogActions, DialogContent, DialogContentText,
+    DialogTitle, Paper, Table, TableBody, TableCell,TableContainer, TableHead,TableRow, TextField
 } from "@mui/material";
 import commonData from "../genericClasses/commonData";
 import QuestionsOptions from "../entities/QuestionsOptions";
@@ -62,7 +54,6 @@ class ShowTestsQuestions extends Component {
             hasTimers: false,
             test: this.props.test,
             loadingNextQuestion: true, // when true I will display a special windows that says loading next question
-            endTime: undefined, //the time when this test will end because of the time restriction per test
             theResponse: "", // this is the respone in text format, when the user inputs the data in a TextField
             buttonStyleBase: {
                 borderTopLeftRadius: "15px",
@@ -465,11 +456,11 @@ class ShowTestsQuestions extends Component {
     answerCell(answerNumber, dimFactor) {
         return <TableCell sx={{padding: 0, width: '33%'}} align="center">
                     <Button id={answerNumber} key={"page"+answerNumber} variant="" onClick={this.handleAnswer}
-                            sx={{ width: '97%', height: '100px', ...this.state.buttonStyleCurrent,
+                            sx={{ width: '97%',minHeight: '100px', height: '100%', ...this.state.buttonStyleCurrent,
                                 fontSize: this.state.currentQuestionOptions[answerNumber]?.fontSize+"px",
                                 border: 3, padding:0.3, borderColor: this.state.currentQuestionOptions[answerNumber]["id"]===this.state.questionsAnswers[this.state.currentQuestion]?.id?"#FFAAAA":"white"
                             }}
-                            className="glowing-text-button">
+                            className="test-button">
                         {
                             this.state.currentQuestionOptions[answerNumber]["image"]===null?
                                 this.state.currentQuestionOptions[answerNumber]["description"]:
@@ -661,22 +652,21 @@ class ShowTestsQuestions extends Component {
                                             <TableCell sx={{padding: 1, width: '33%'}} align="right">
                                                 {
                                                     this.state.test.maxTime>0
-                                                        ?<Countdown date={this.state.endTime} renderer={renderer}/>
+                                                        ?<Countdown date={Date.now() + this.state.test.maxTime*1000} renderer={renderer}/>
                                                         :(this.state.questions[this.state.currentQuestion]["maxTime"]>0 && !this.state.loadingNextQuestion)
                                                             ?<Timer initialTime={this.state.questions[this.state.currentQuestion]["maxTime"]} onTimerEnd={handleTimerEnd} ref={(ref) => (this.timerRef = ref)}/>
                                                             :""
                                                 }
                                             </TableCell>
                                         </TableRow>
-                                        {
-                                            !commonData.isEmpty(this.state.test.text) &&
                                             <TableRow>
-                                                <TableCell sx={{padding: 0}} align="left" colSpan={3}>
-                                                    <div dangerouslySetInnerHTML={{ __html: this.state.test.text }} />
+                                                <TableCell sx={{padding: 0}} align="left" colSpan={3} id="generalTextArea">
+                                                    {!commonData.isEmpty(this.state.test.text) &&
+                                                        <div dangerouslySetInnerHTML={{ __html: this.state.test.text }} />}
+                                                    {!commonData.isEmpty(this.state.questions[this.state.currentQuestion]["text"]) &&
+                                                        <div dangerouslySetInnerHTML={{ __html: this.state.questions[this.state.currentQuestion]["text"] }} />}
                                                 </TableCell>
                                             </TableRow>
-                                        }
-
                                     </TableBody>
                                 </Table>
                             </TableContainer>

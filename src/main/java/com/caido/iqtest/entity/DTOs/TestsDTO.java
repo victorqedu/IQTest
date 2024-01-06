@@ -1,25 +1,15 @@
+package com.caido.iqtest.entity.DTOs;
 
-package com.caido.iqtest.entity;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
+import com.caido.iqtest.entity.Groups;
+import com.caido.iqtest.entity.Subjects;
 import java.io.Serializable;
 
-@Entity
-@Table(name="tests")
-public class Tests implements Serializable {
-    public Tests() {
+public class TestsDTO implements Serializable {
+    public TestsDTO() {
     }
 
-    public Tests(Long id, Integer detailedResults, String resultsText, String description, Integer options, Integer disabled, Integer randomImages, Subjects idSubjects, Groups idGroups, Integer maxTime, Integer detailsPerQuestion, String text, Integer hasBeenFinalized) {
+    public TestsDTO(Long id, Integer detailedResults, String resultsText, String description, Integer options, Integer disabled, Integer randomImages, Subjects idSubjects, Groups idGroups, Integer maxTime, 
+            Integer detailsPerQuestion, String text, Integer finalizedPercent) {
         this.id = id;
         this.detailedResults = detailedResults;
         this.resultsText = resultsText;
@@ -32,12 +22,9 @@ public class Tests implements Serializable {
         this.maxTime = maxTime;
         this.detailsPerQuestion = detailsPerQuestion;
         this.text = text;
-        this.finalizedPercent = hasBeenFinalized;
+        this.finalizedPercent = finalizedPercent;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id", nullable = false)
     private Long id;
     public Long getId() {
         return id;
@@ -46,7 +33,6 @@ public class Tests implements Serializable {
         this.id = id;
     }
     
-    @Column(name="detailed_results")
     private Integer detailedResults;
     public Integer getDetailedResults() {
         return detailedResults;
@@ -55,7 +41,6 @@ public class Tests implements Serializable {
         this.detailedResults = detailedResults;
     }
     
-    @Column(name="results_text")
     private String resultsText;
     public String getResultsText() {
         return resultsText;
@@ -64,7 +49,6 @@ public class Tests implements Serializable {
         this.resultsText = resultsText;
     }
         
-    @Column(name="description", nullable=false)
     private String description;
     public String getDescription() {
         return description;
@@ -73,7 +57,6 @@ public class Tests implements Serializable {
         this.description = description;
     }
 
-    @Column(name="options")
     private Integer options;
     public Integer getOptions() {
         return options;
@@ -82,7 +65,6 @@ public class Tests implements Serializable {
         this.options = options;
     }
     
-    @Column(name="disabled")
     private Integer disabled;
     public Integer getDisabled() {
         return disabled;
@@ -91,7 +73,6 @@ public class Tests implements Serializable {
         this.disabled = disabled;
     }
     
-    @Column(name="random_images")
     private Integer randomImages;
     public Integer getRandomImages() {
         return randomImages;
@@ -100,8 +81,6 @@ public class Tests implements Serializable {
         this.randomImages = randomImages;
     }
     
-    @ManyToOne(cascade = {CascadeType.DETACH})
-    @JoinColumn(name="id_subjects", nullable=false)
     private Subjects idSubjects;
     public Subjects getIdSubjects() {
         return idSubjects;
@@ -110,8 +89,6 @@ public class Tests implements Serializable {
         this.idSubjects = idSubjects;
     }
     
-    @ManyToOne(cascade = {CascadeType.DETACH})
-    @JoinColumn(name="id_groups")
     private Groups idGroups;
     public Groups getIdGroups() {
         return idGroups;
@@ -120,7 +97,6 @@ public class Tests implements Serializable {
         this.idGroups = idGroups;
     }
 
-    @Column(name="max_time")
     private Integer maxTime;
     public Integer getMaxTime() {
         return maxTime;
@@ -129,7 +105,6 @@ public class Tests implements Serializable {
         this.maxTime = maxTime;
     }     
 
-    @Column(name="details_per_question")
     private Integer detailsPerQuestion;
     public Integer getDetailsPerQuestion() {
         return detailsPerQuestion;
@@ -138,7 +113,6 @@ public class Tests implements Serializable {
         this.detailsPerQuestion = detailsPerQuestion;
     }     
 
-    @Column(name="text")
     private String text;
     public String getText() {
         return text;
@@ -147,7 +121,6 @@ public class Tests implements Serializable {
         this.text = text;
     }
     
-    @Transient
     private Integer finalizedPercent;
     public Integer getFinalizedPercent() {
         return finalizedPercent;
@@ -155,4 +128,5 @@ public class Tests implements Serializable {
     public void setFinalizedPercent(Integer finalizedPercent) {
         this.finalizedPercent = finalizedPercent;
     }     
+       
 }

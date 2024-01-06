@@ -136,4 +136,13 @@ public class Questions implements Serializable {
     public void setImageWidth(Integer imageWidth) {
         this.imageWidth = imageWidth;
     }
+    
+    @Column(name="text")
+    private String text;
+    public String getText() {
+        return text;
+    }
+    public void setText(String text) {
+        this.text = text;
+    }
 }

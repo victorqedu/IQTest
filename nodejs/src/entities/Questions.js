@@ -118,6 +118,16 @@ class Questions extends Component {
             size: 'regular',
             editable: true,
         },
+        {
+            id: 'text',
+            numeric: false,
+            disablePadding: false,
+            label: 'Text',
+            type: 'textarea',
+            columnVisible: false,
+            size: 'regular',
+            editable: true,
+        },
     ];
 
     static tabs = [

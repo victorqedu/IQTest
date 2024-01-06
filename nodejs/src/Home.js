@@ -3,7 +3,7 @@ import {
     AppBar,
     Box,
     Button,
-    Container, Divider, IconButton,
+    Container, Divider, Icon, IconButton,
     Input, Menu, MenuItem,
     Toolbar,
 } from "@mui/material";
@@ -29,23 +29,28 @@ import GenericEdit from "./genericClasses/GenericEdit";
 import TestsImports from "./entities/TestsImports";
 import NewAccount from "./hardCodedClasses/NewAccount";
 import Groups from "./entities/Groups";
+import {ReactComponent as TestDone} from './images/testDone.svg';
 
 class Home extends Component {
     constructor(props) {
         super(props);
-        this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleTestSubmit = this.handleTestSubmit.bind(this);
         this.shuffleArray = this.shuffleArray.bind(this);
         this.handleMenuClick = this.handleMenuClick.bind(this);
         this.handleAccountButtonClick = this.handleAccountButtonClick.bind(this);
         this.handleAccountClose = this.handleAccountClose.bind(this);
         this.updateConnectedState = this.updateConnectedState.bind(this);
+        this.handleGroupSubmit = this.handleGroupSubmit.bind(this);
 
         this.state = {
+            selectedSubjectId: undefined, // the selected subject ID
+            selectedGroupIndex: undefined,
             selectedTestIndex: undefined,
             action: undefined,
             questions: {},
             subjects: [], // all subjects from the database to be exposed in the main menu
             tests: [], // list with all the tests available for the selected subject from the main menu
+            groups: [], // list with all the groups available for the selected subject from the main menu
             anchorEl: null,
             connected: commonData.connected(),
         };
@@ -81,12 +86,16 @@ class Home extends Component {
         event.preventDefault();
         let idSubject = event.currentTarget.id;
         let item = {...this.state};
+        item.selectedGroupIndex = undefined;
         if(idSubject==="login" || idSubject==="contact" || idSubject === "newAccount") {
             item.action = idSubject;
             item.tests = undefined;
         } else {
             item.action = "testsList";
-            item.tests = (await commonData.getDataFromApi("testsWithSubjectId", idSubject, "testsList")).data;
+            //item.tests = (await commonData.getDataFromApi("testsWithSubjectId", idSubject, "testsList")).data;
+            item.selectedSubjectId = idSubject;
+            item.groups = (await commonData.getDataFromApi("findGroupsWithSubjectId", idSubject, "groupsList")).data;
+            item.tests = (await commonData.getDataFromApi("testsWithSubjectIdWithoutGroup", idSubject, "testsList")).data;
             item.anchorEl = event.currentTarget;
             console.log("tests are");
             console.log(item.tests);
@@ -119,10 +128,10 @@ class Home extends Component {
         }
     }
 
-    async handleSubmit(event) {
+    async handleTestSubmit(event) {
         event.preventDefault();
         let selectedTestIndex = event.target.selectedTestIndex.value;
-        console.log("Start handleSubmit for test id "+selectedTestIndex);
+        console.log("Start handleTestSubmit for test id "+selectedTestIndex);
         if(selectedTestIndex!==undefined && selectedTestIndex!=null && selectedTestIndex!=="") {
             let item = {...this.state};
             item.selectedTestIndex = selectedTestIndex;
@@ -140,16 +149,38 @@ class Home extends Component {
         }
     }
 
+    async handleGroupSubmit(event) {
+        event.preventDefault();
+        let selectedGroupIndex = event.target.selectedGroupIndex.value;
+        console.log("Start handleGroupSubmit for group id "+selectedGroupIndex);
+        if(!commonData.isEmpty(selectedGroupIndex)) {
+            let item = {...this.state};
+            item.selectedGroupIndex = selectedGroupIndex;
+            item.tests = (await commonData.getDataFromApi("testsWithSubjectIdAndGroupId", [item.selectedSubjectId, item.groups[selectedGroupIndex].id], Tests.apiPath)).data;
+            console.log("tests size is "+item.tests.length);
+            this.setState(item);
+        }
+    }
+
     render() {
         console.log("action "+this.state.action);
         /*this.state.tests && console.log("tests are defined");
         console.log(this.state.tests);*/
 
         const formStyle = { marginBottom: "5px" }; // Adjust the margin as needed
-        const buttonStyle = {
+        const testButtonStyle = {
             width: '200px',
             height: '70px',
             backgroundColor: '#f4ede5',
+            color: '#000000',
+            borderRadius: "10px",
+            padding: '30px',
+            border: "2px solid #0A0610", // Border styling
+        };
+        const groupButtonStyle = {
+            width: '200px',
+            height: '70px',
+            backgroundColor: '#eedfcc',
             color: '#000000',
             borderRadius: "10px",
             border: "2px solid #0A0610", // Border styling
@@ -268,18 +299,44 @@ class Home extends Component {
                                                                         :this.state.action==="manageTestImports"
                                                                             ?<GenericEdit key="manageTestImports" columns={TestsImports.Columns} apiEditName={TestsImports.apiEditName}/>
                                                                             :this.state.action==="manageGroups"
-                                                                                ?<GenericEdit key="manageGroups" columns={Groups.Columns} apiEditName={Groups.apiEditName}/>
-                                                                                :(this.state.tests && this.state.tests.length>0)
-                                                                                    ?this.state.tests.map((t, i) => {
-                                                                                        return (<div key={"testID" + t.id} style={formStyle}>
-                                                                                            <Form onSubmit={this.handleSubmit} style={formStyle}>
-                                                                                                <Input type="hidden" name="selectedTestIndex" id="selectedTestIndex" value={i}/>
-                                                                                                <Button variant="outlined" type="submit" className="glowing-text-button"
-                                                                                                        style={buttonStyle}>{t.description}</Button>
-                                                                                            </Form>
-                                                                                        </div>);
-                                                                                        })
-                                                                                    :""
+                                                                                ?<GenericTable key="manageGroups"  config={Groups}/>
+                                                                                :this.state.selectedSubjectId !== undefined &&
+                                                                                        <>
+                                                                                            {this.state.tests && this.state.tests.length > 0 &&
+                                                                                                this.state.tests.map((t, i) => (
+                                                                                                    <div key={"testID" + t.id} style={formStyle}>
+                                                                                                        <Form onSubmit={this.handleTestSubmit} style={formStyle}>
+                                                                                                            <Input type="hidden" name="selectedTestIndex" id="selectedTestIndex" value={i} />
+                                                                                                            <Button variant="outlined" type="submit" className="test-button" style={testButtonStyle}>
+                                                                                                                {
+                                                                                                                    !commonData.isEmpty(t.finalizedPercent) &&
+                                                                                                                    (t.finalizedPercent===100
+                                                                                                                        ? <Icon style={{ position: 'absolute', top: 0, right: 0 }}>
+                                                                                                                            <TestDone></TestDone>
+                                                                                                                        </Icon>
+                                                                                                                        : <label style={{ position: 'absolute', top: 0, right: 0, margin: '3px',fontSize: '12px', }}>{t.finalizedPercent}%</label>
+                                                                                                                    )
+
+                                                                                                                }
+                                                                                                                {t.description}
+                                                                                                            </Button>
+                                                                                                        </Form>
+                                                                                                    </div>
+                                                                                                ))}
+                                                                                            {(this.state.groups && this.state.groups.length > 0 && commonData.isEmpty(this.state.selectedGroupIndex)) &&
+                                                                                                this.state.groups.map((t, i) => (
+                                                                                                    <div key={"groupID" + t.id} style={formStyle}>
+                                                                                                        <Form onSubmit={this.handleGroupSubmit} style={formStyle}>
+                                                                                                            <Input type="hidden" name="selectedGroupIndex" id="selectedGroupIndex" value={i} />
+                                                                                                            <Button variant="outlined" type="submit" className="test-button" style={groupButtonStyle}>
+                                                                                                                {t.name}
+                                                                                                            </Button>
+                                                                                                        </Form>
+                                                                                                    </div>
+                                                                                                ))}
+                                                                                        </>
+
+
                             }
                         </Box>
                     </Box>

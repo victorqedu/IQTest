@@ -66,8 +66,12 @@ class commonData extends Component {
             },
         }
         const jwtToken = localStorage.getItem('jwtToken');
+        console.log("in getconfig jwtToken is "+jwtToken);
         if(!commonData.checkJWTokenExpired()) {
             config.headers["Authorization"] = jwtToken;
+        } else {
+            commonData.logout();
+            console.log("in getconfig jwtToken is expired");
         }
         return config;
     }
@@ -214,7 +218,11 @@ class commonData extends Component {
         console.log("Start getDataFromApi "+apiPath);
         let url = this.getApiLink()+apiName;
         if(filterParameter!==undefined) {
-            url+="/"+filterParameter;
+            if(Array.isArray(filterParameter)) {
+                filterParameter.map((val)=>(url+="/"+val));
+            } else {
+                url+="/"+filterParameter;
+            }
         }
         return await axios.get(url, commonData.getConfig())
             .then(res => {

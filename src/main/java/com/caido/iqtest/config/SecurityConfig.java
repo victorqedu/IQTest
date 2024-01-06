@@ -54,6 +54,9 @@ public class SecurityConfig {
                                     "/api/subjects",
                                     "/api/testssessionpoints/*",
                                     "/api/testsMaxPoints/*",
+                                    "/api/testsWithSubjectIdAndGroupId/**",
+                                    "/api/testsWithSubjectIdWithoutGroup/*",
+                                    "/api/findGroupsWithSubjectId/*",
                                     "/api/testsWithSubjectId/*").permitAll()
                             .requestMatchers(HttpMethod.POST, 
                                     "/api/testssessions",

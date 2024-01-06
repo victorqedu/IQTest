@@ -1,10 +1,15 @@
 package com.caido.iqtest.rest;
 
 import com.caido.iqtest.Services.TestsService;
+import com.caido.iqtest.config.SecurityConstants;
+import com.caido.iqtest.entity.DTOs.TestsDTO;
 import com.caido.iqtest.entity.Subjects;
 import com.caido.iqtest.entity.Tests;
 import com.caido.iqtest.entity.TestsImports;
 import com.caido.iqtest.repositories.TestsRepository;
+import com.caido.iqtest.util.JWT;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.hateoas.CollectionModel;
@@ -61,15 +66,69 @@ public class TestsController {
     }
     
     @GetMapping("/testsWithSubjectId/{id}")
-    CollectionModel<EntityModel<Tests>> findAllWithSubjectId(@PathVariable Long id) {
+    CollectionModel<EntityModel<Tests>> testsWithSubjectId(@PathVariable Long id) {
         Subjects s = new Subjects();
         s.setId(id);
-        List<EntityModel<Tests>> c = repository.findAllWithSubjectId(s).stream() 
+        List<EntityModel<Tests>> c = repository.testsWithSubjectId(s).stream() 
             .map(assembler::toModel) 
             .collect(Collectors.toList());
-        return CollectionModel.of(c, linkTo(methodOn(TestsController.class).findAllWithSubjectId(id)).withSelfRel());
+        return CollectionModel.of(c, linkTo(methodOn(TestsController.class).testsWithSubjectId(id)).withSelfRel());
     }
     
+    private Tests mapTestsDTOToTests(TestsDTO td) {
+        System.out.println("td.getHasBeenFinalized "+td.getFinalizedPercent());
+        return new Tests(td.getId(), td.getDetailedResults(), td.getResultsText(), td.getDescription(), td.getOptions(), td.getDisabled(), td.getRandomImages(), td.getIdSubjects(), td.getIdGroups(), 
+                td.getMaxTime(), td.getDetailsPerQuestion(), td.getText(), td.getFinalizedPercent());
+    }
+    
+    @GetMapping("/testsWithSubjectIdWithoutGroup/{idSubject}")
+    CollectionModel<EntityModel<Tests>> testsWithSubjectIdWithoutGroup(@PathVariable Long idSubject, HttpServletRequest hsr) throws Exception {
+        String jwtToken = hsr.getHeader(SecurityConstants.JWT_HEADER);
+        if(jwtToken!=null && !jwtToken.equals("")) {
+            System.out.println("testsWithSubjectIdWithoutGroup jwt token is defined");
+            Long userId = Long.valueOf(JWT.getClaimByNameFromToken(jwtToken, "id"));
+            List<Tests> testsList = repository.testsDTOWithSubjectIdWithoutGroup(idSubject, userId).stream()
+                .map(this::mapTestsDTOToTests) 
+                .collect(Collectors.toList());
+            
+            List<EntityModel<Tests>> c = testsList.stream() 
+                .map(assembler::toModel) 
+                .collect(Collectors.toList());
+            return CollectionModel.of(c, linkTo(methodOn(TestsController.class).testsWithSubjectIdWithoutGroup(idSubject, null)).withSelfRel());            
+        } else {
+            System.out.println("testsWithSubjectIdWithoutGroup jwt token is not defined");
+            List<EntityModel<Tests>> c = repository.testsWithSubjectIdWithoutGroup(idSubject).stream() 
+                .map(assembler::toModel) 
+                .collect(Collectors.toList());
+            return CollectionModel.of(c, linkTo(methodOn(TestsController.class).testsWithSubjectIdWithoutGroup(idSubject, null)).withSelfRel());            
+        }
+        
+    }
+
+    @GetMapping("/testsWithSubjectIdAndGroupId/{idSubject}/{idGroup}")
+    CollectionModel<EntityModel<Tests>> testsWithSubjectIdAndGroupId(@PathVariable("idSubject") Long idSubject, @PathVariable("idGroup") Long idGroup, HttpServletRequest hsr) throws Exception {
+        String jwtToken = hsr.getHeader(SecurityConstants.JWT_HEADER);
+        if(jwtToken!=null && !jwtToken.equals("")) {
+            System.out.println("testsWithSubjectIdAndGroupId jwt token is defined");
+            Long userId = Long.valueOf(JWT.getClaimByNameFromToken(jwtToken, "id"));
+            List<Tests> testsList = repository.testsDTOWithSubjectIdAndGroupId(idSubject, idGroup, userId).stream()
+                .map(this::mapTestsDTOToTests) 
+                .collect(Collectors.toList());
+            
+            List<EntityModel<Tests>> c = testsList.stream() 
+                .map(assembler::toModel) 
+                .collect(Collectors.toList());
+            return CollectionModel.of(c, linkTo(methodOn(TestsController.class).testsWithSubjectIdWithoutGroup(idSubject, null)).withSelfRel());            
+        } else {
+            List<EntityModel<Tests>> c = repository.testsWithSubjectIdAndGroupId(idSubject, idGroup).stream() 
+                .map(assembler::toModel) 
+                .collect(Collectors.toList());
+            return CollectionModel.of(
+                    c, 
+                    linkTo(methodOn(TestsController.class).testsWithSubjectIdAndGroupId(idSubject, idGroup, null)).withSelfRel());
+        }
+    }
+
     @PostMapping("/tests")
     EntityModel<Tests> create(@RequestBody Tests o) {
         return assembler.toModel(repository.save(o));
@@ -90,6 +149,10 @@ public class TestsController {
     @DeleteMapping("/tests/{id}")
     void delete(@PathVariable Long id) {
         repository.deleteById(id);
+    }
+
+    Class<?> findGroupsWithSubjectId(Long idSubject) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }
 
