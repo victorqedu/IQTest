@@ -53,6 +53,7 @@ class ShowTestsQuestions extends Component {
             isTabletOrMobile: false,
             hasTimers: false,
             test: this.props.test,
+            dateStartTest: Date.now(), // the date when the test has been started, will be used to calculate the remaining time if the test has a timer
             loadingNextQuestion: true, // when true I will display a special windows that says loading next question
             theResponse: "", // this is the respone in text format, when the user inputs the data in a TextField
             buttonStyleBase: {
@@ -443,7 +444,7 @@ class ShowTestsQuestions extends Component {
         this.setState(item, () => {
             let item = {...this.state};
             item.correct = this.checkIfTheCurrentQuestionHasBeenAnsweredCorrectly(undefined);;
-            this.setState(item);
+            this.setState(item)
         });
     }
 
@@ -652,7 +653,7 @@ class ShowTestsQuestions extends Component {
                                             <TableCell sx={{padding: 1, width: '33%'}} align="right">
                                                 {
                                                     this.state.test.maxTime>0
-                                                        ?<Countdown date={Date.now() + this.state.test.maxTime*1000} renderer={renderer}/>
+                                                        ?<Countdown date={this.state.dateStartTest + this.state.test.maxTime*1000} renderer={renderer}/>
                                                         :(this.state.questions[this.state.currentQuestion]["maxTime"]>0 && !this.state.loadingNextQuestion)
                                                             ?<Timer initialTime={this.state.questions[this.state.currentQuestion]["maxTime"]} onTimerEnd={handleTimerEnd} ref={(ref) => (this.timerRef = ref)}/>
                                                             :""
