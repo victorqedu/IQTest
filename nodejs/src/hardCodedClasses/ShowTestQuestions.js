@@ -526,7 +526,7 @@ class ShowTestsQuestions extends Component {
             } else {
                 return (
                     <span>
-                        Timp rămas <br/>{hours}:{minutes}:{seconds}
+                        [Timp rămas] <br/>{hours}:{minutes}:{seconds}
                     </span>
                 );
             }
